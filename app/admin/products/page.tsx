@@ -1,9 +1,9 @@
-import React from "react";
+"use client";
 
 function page() {
   return (
     <main className="p-5">
-      <h1>Dashboard</h1>
+      <h1>Products</h1>
     </main>
   );
 }

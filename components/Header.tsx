@@ -1,6 +1,6 @@
 import { Globe } from "lucide-react";
 
-function Header() {
+function MainHeader() {
   return (
     <nav className="bg-black px-10 py-3 text-white">
       <div className="flex cursor-pointer gap-3 hover:underline">
@@ -14,4 +14,4 @@ function Header() {
   );
 }
 
-export default Header;
+export default MainHeader;

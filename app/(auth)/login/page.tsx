@@ -27,11 +27,10 @@ type TLogInSchema = z.infer<typeof logInSchema>;
 
 ////////////// FUNCTIONAL COMPONENT //////////////
 function SignIn() {
-  const authContext = useAuth();
-  const user = authContext?.user;
+  const { user } = useAuth();
 
   const router = useRouter();
-  const [isloading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const {
     register,
     handleSubmit,
@@ -41,13 +40,11 @@ function SignIn() {
     resolver: zodResolver(logInSchema),
   });
 
-  console.log(user);
-
   useEffect(() => {
-    if (user) {
-      router.push("/dashboard");
+    if (!isLoading && user) {
+      router.push("/admin");
     }
-  }, [user]);
+  }, [user, isLoading, router]);
 
   async function onSubmit(data: TLogInSchema) {
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -71,7 +68,8 @@ function SignIn() {
       className="m-20 flex w-1/3 flex-col gap-4"
     >
       <h1 className="text-1xl mb-4 font-bold">
-        Log in or join IKEA today to benefit from a more personalized experience
+        Log in or join IKEAN today to benefit from a more personalized
+        experience
       </h1>
       <div>
         <label
@@ -107,7 +105,10 @@ function SignIn() {
           <p className="text-sm text-red-600">{errors.password.message}</p>
         )}
       </div>
-      <Link href="/reset" className="text-muted-foreground block underline">
+      <Link
+        href="/reset-password"
+        className="text-muted-foreground block underline"
+      >
         Forgot your password?
       </Link>
       <Button
@@ -118,20 +119,20 @@ function SignIn() {
       </Button>
       <Button
         onClick={handleLogin}
-        disabled={isloading}
+        disabled={isLoading}
         className="relative w-full cursor-pointer rounded-full p-5 disabled:bg-gray-950"
       >
         <PulseLoader
           color="#fff"
           size={8}
-          loading={isloading}
+          loading={isLoading}
           className="absolute top-1/2 left-4 -translate-y-1/2"
         />
         <FcGoogle size={25} />
         Sign in with Google
       </Button>
       <p className="text-muted-foreground after:content-[' '] before:content-[' '] relative text-center text-sm before:absolute before:top-1/2 before:left-0 before:h-[1px] before:w-[38%] before:bg-black/30 after:absolute after:top-1/2 after:right-0 after:h-[1px] after:w-[38%] after:bg-black/30">
-        New at IKEA?
+        New at IKEAN?
       </p>
       <Button
         variant={"border"}

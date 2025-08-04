@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   isLoading: boolean;
 }
@@ -23,15 +23,14 @@ interface AuthProviderProps {
 
 export default function AuthContextProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(user);
-      } else {
-        setUser(null);
-      }
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      setIsLoading(false); // ✅ stop loading when auth is ready
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -39,7 +38,7 @@ export default function AuthContextProvider({ children }: AuthProviderProps) {
     <AuthContext.Provider
       value={{
         user,
-        isLoading: user === undefined,
+        isLoading,
       }}
     >
       {children}
@@ -47,4 +46,10 @@ export default function AuthContextProvider({ children }: AuthProviderProps) {
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthContextProvider");
+  }
+  return context;
+};
