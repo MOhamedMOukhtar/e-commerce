@@ -2,12 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getCategory } from "@/lib/firestore/categories/read_server";
-import {
-  createNewCategory,
-  updateCategory,
-} from "@/lib/firestore/categories/write";
-import { TCategory } from "@/types/catrgory";
+import { getAdmin } from "@/lib/firestore/admins/read_server";
+import { createNewAdmin, updateAdmin } from "@/lib/firestore/admins/write";
+import { TBrand } from "@/types/brand";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -15,14 +12,15 @@ import { toast } from "sonner";
 
 type TData = {
   name: string;
-  slug: string;
+  email: string;
+  slug?: string;
 };
 
 ////////////// FUNCTIONAL COMPONENT //////////////
 function Form() {
   const [data, setData] = useState<TData>({
     name: "",
-    slug: "",
+    email: "",
   });
   const [image, setImage] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -35,17 +33,17 @@ function Form() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await getCategory(id as string);
+        const res = await getAdmin(id as string);
         if (!res) {
-          toast.error("Category not found");
+          toast.error("Admin not found");
         } else {
-          setData(res as TCategory);
+          setData(res as TBrand);
         }
       } catch (error) {
         if (error instanceof Error) {
           toast.error(error.message);
         } else {
-          toast.error("Error fetching category");
+          toast.error("Error fetching brand");
         }
       }
     }
@@ -66,9 +64,9 @@ function Form() {
   async function handleCreate() {
     setIsLoading(true);
     try {
-      await createNewCategory({ data, image });
-      toast.success("Category created successfully!");
-      setData({ name: "", slug: "" });
+      await createNewAdmin({ data, image });
+      toast.success("Admin created successfully!");
+      setData({ name: "", email: "" });
       setImage(null);
       if (imageRef.current) {
         imageRef.current.value = "";
@@ -77,7 +75,7 @@ function Form() {
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("Error creating category");
+        toast.error("Error creating Brand");
       }
     }
     setIsLoading(false);
@@ -86,19 +84,19 @@ function Form() {
   async function handleUpdate() {
     setIsLoading(true);
     try {
-      await updateCategory({ data, image });
-      toast.success("Category updated successfully!");
-      setData({ name: "", slug: "" });
+      await updateAdmin({ data, image });
+      toast.success("Admin updated successfully!");
+      setData({ name: "", email: "" });
       setImage(null);
       if (imageRef.current) {
         imageRef.current.value = "";
       }
-      router.push("/admin/categories");
+      router.push("/admin/admins");
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("Error creating category");
+        toast.error("Error creating brand");
       }
     }
     setIsLoading(false);
@@ -106,7 +104,7 @@ function Form() {
 
   return (
     <div className="flex w-[300px] flex-col gap-3 rounded-md bg-white p-5 lg:w-[400px]">
-      <h1 className="text-xl">{id ? "Update" : "Create"} Category</h1>
+      <h1 className="text-xl">{id ? "Update" : "Create"} Admin</h1>
       <form
         className="flex flex-col gap-4"
         onSubmit={(e) => {
@@ -121,7 +119,7 @@ function Form() {
         <div>
           <label
             className="mb-0.5 flex gap-1 text-sm text-gray-500/90"
-            htmlFor="category-image"
+            htmlFor="admin-image"
           >
             Image
             <span className="relative block translate-y-[3px] text-red-500/60">
@@ -131,7 +129,7 @@ function Form() {
           {image && (
             <Image
               src={URL.createObjectURL(image)}
-              alt="Category"
+              alt="admin"
               className="my-2 rounded-sm object-cover"
               width={80}
               height={80}
@@ -139,7 +137,7 @@ function Form() {
           )}
           <Input
             ref={imageRef}
-            id="category-image"
+            id="admin-image"
             type="file"
             onChange={(e) => {
               if (e.target.files && e.target.files.length > 0) {
@@ -152,7 +150,7 @@ function Form() {
         <div>
           <label
             className="mb-0.5 flex gap-1 text-sm text-gray-500/90"
-            htmlFor="category-name"
+            htmlFor="admin-name"
           >
             Name
             <span className="relative block translate-y-[3px] text-red-500/60">
@@ -160,7 +158,7 @@ function Form() {
             </span>
           </label>
           <Input
-            id="category-name"
+            id="admin-name"
             type="text"
             value={data?.name ?? ""}
             onChange={(e) => handleData("name", e.target.value)}
@@ -171,22 +169,23 @@ function Form() {
         <div>
           <label
             className="mb-0.5 flex gap-1 text-sm text-gray-500/90"
-            htmlFor="category-slug"
+            htmlFor="admin-email"
           >
-            Slug
+            Email
             <span className="relative block translate-y-[3px] text-red-500/60">
               *
             </span>
           </label>
           <Input
-            id="category-slug"
-            type="text"
-            value={data?.slug ?? ""}
-            onChange={(e) => handleData("slug", e.target.value)}
-            placeholder="Enter Slug"
+            id="admin-email"
+            type="email"
+            value={data?.email ?? ""}
+            onChange={(e) => handleData("email", e.target.value)}
+            placeholder="Enter Name"
             className="h-8 rounded-sm border-gray-300 text-sm! placeholder:text-gray-400 focus-visible:border-blue-400 focus-visible:ring-transparent"
           />
         </div>
+
         <Button
           type="submit"
           disabled={isLoading}

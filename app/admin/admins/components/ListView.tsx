@@ -2,8 +2,8 @@
 
 import LoadingPage from "@/components/loading";
 import { Button } from "@/components/ui/button";
-import { useCategories } from "@/lib/firestore/categories/read";
-import { deleteCategory } from "@/lib/firestore/categories/write";
+import { useAdmins } from "@/lib/firestore/admins/read";
+import { deleteAdmin } from "@/lib/firestore/admins/write";
 import { showConfirmToast } from "@/lib/helper/confirmToast";
 import { Edit2, Trash2 } from "lucide-react";
 import Image from "next/image";
@@ -14,15 +14,14 @@ import { toast } from "sonner";
 interface TItem {
   id: string;
   name: string;
-  slug: string;
+  email: string;
   imageURL: string;
-  timestampCreate: string;
 }
 
 ////////////// FUNCTIONAL COMPONENT //////////////
 function ListView() {
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
-  const { data: categories, isLoading, error } = useCategories();
+  const { data: admins, isLoading, error } = useAdmins();
   const router = useRouter();
 
   if (isLoading)
@@ -39,25 +38,25 @@ function ListView() {
   async function handelDelete(id: string) {
     setIsDeleting(true);
     try {
-      await deleteCategory(id);
-      toast.success("Category deleted successfully!");
+      await deleteAdmin(id);
+      toast.success("Admin deleted successfully!");
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("Error deleting category");
+        toast.error("Error deleting brand");
       }
     }
     setIsDeleting(false);
   }
 
   function handleUpdate(id: string) {
-    router.push(`/admin/categories?id=${id}`);
+    router.push(`/admin/admins?id=${id}`);
   }
 
   return (
     <div className="flex flex-1 flex-col rounded-md px-5">
-      <h1 className="text-xl">Categories</h1>
+      <h1 className="text-xl">Admins</h1>
       <table className="w-full border-separate border-spacing-y-3">
         <thead>
           <tr>
@@ -65,14 +64,14 @@ function ListView() {
               SN
             </th>
             <th className="border-y bg-white px-3 py-2">Image</th>
-            <th className="border-y bg-white px-3 py-2 text-start">Name</th>
+            <th className="border-y bg-white px-3 py-2 text-start">Name </th>
             <th className="rounded-r-lg border-y border-r bg-white px-3 py-2">
               Actions
             </th>
           </tr>
         </thead>
         <tbody>
-          {categories?.map((item: TItem, index: number) => {
+          {admins?.map((item: TItem, index: number) => {
             return (
               <tr key={item?.id} className="">
                 <td className="rounded-l-lg border-1 border-y bg-white px-3 py-2 text-center">
@@ -82,14 +81,19 @@ function ListView() {
                   <div className="flex justify-center">
                     <Image
                       src={item?.imageURL}
-                      alt="image category"
+                      alt="image brand"
                       width={50}
                       height={50}
                       className="rounded-sm"
                     />
                   </div>
                 </td>
-                <td className="border-y bg-white px-3 py-2">{item?.name}</td>
+                <td className="border-y bg-white px-3 py-2">
+                  <div className="flex flex-col">
+                    <h2>{item?.name}</h2>
+                    <h3 className="text-xs text-gray-500">{item?.email}</h3>
+                  </div>
+                </td>
                 <td className="rounded-r-lg border-y border-r bg-white px-3 py-2">
                   <div className="flex items-center justify-center gap-2">
                     <Button
@@ -104,10 +108,7 @@ function ListView() {
                       size={"sm"}
                       disabled={isDeleting}
                       onClick={() =>
-                        showConfirmToast(
-                          () => handelDelete(item?.id),
-                          "category",
-                        )
+                        showConfirmToast(() => handelDelete(item?.id), "admin")
                       }
                     >
                       <Trash2 size={13} />

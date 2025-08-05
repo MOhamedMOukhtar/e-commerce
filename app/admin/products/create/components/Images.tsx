@@ -1,0 +1,90 @@
+import { Input } from "@/components/ui/input";
+import Image from "next/image";
+
+interface PropsImages {
+  data: { title: string; description: string };
+  // handleData: (key: string, value: string | null) => void;
+  featureImage: File | null;
+  setFeatureImage: React.Dispatch<React.SetStateAction<File | null>>;
+  imageList: (File | null)[];
+  setImageList: React.Dispatch<React.SetStateAction<(File | null)[]>>;
+}
+
+function Images({
+  data,
+  featureImage,
+  setFeatureImage,
+  imageList,
+  setImageList,
+}: PropsImages) {
+  return (
+    <section className="flex flex-1 flex-col gap-3 rounded-md border bg-white p-4">
+      <h1 className="font-semibold">Images</h1>
+      <div className="flex flex-col gap-1">
+        {featureImage && (
+          <Image
+            src={URL.createObjectURL(featureImage)}
+            alt="Category"
+            className="my-2 rounded-sm object-cover"
+            width={80}
+            height={80}
+          />
+        )}
+        <label
+          className="text-sm text-gray-500"
+          htmlFor="product-feature-image"
+        >
+          Feature Image <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="file"
+          id="product-feature-image"
+          name="product-feature-image"
+          onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) {
+              setFeatureImage(e.target.files[0]);
+            }
+          }}
+          className="w-full rounded-sm border px-4 py-2 text-sm! outline-none"
+        />
+      </div>
+      <div className="flex flex-col gap-1">
+        {imageList.length > 0 && (
+          <div className="flex flex-wrap gap-3">
+            {imageList.map((img) => {
+              if (img) {
+                return (
+                  <Image
+                    key={img.name}
+                    src={URL.createObjectURL(img)}
+                    alt="Category"
+                    className="my-2 rounded-sm object-cover"
+                    width={80}
+                    height={80}
+                  />
+                );
+              }
+            })}
+          </div>
+        )}
+        <label className="text-sm text-gray-500" htmlFor="product-images">
+          Images <span className="text-red-500">*</span>
+        </label>
+        <Input
+          type="file"
+          id="product-images"
+          name="product-images"
+          multiple
+          onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) {
+              setImageList(Array.from(e.target.files));
+            }
+          }}
+          className="w-full rounded-sm border px-4 py-2 text-sm! outline-none"
+        />
+      </div>
+    </section>
+  );
+}
+
+export default Images;

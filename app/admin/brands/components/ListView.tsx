@@ -2,8 +2,8 @@
 
 import LoadingPage from "@/components/loading";
 import { Button } from "@/components/ui/button";
-import { useCategories } from "@/lib/firestore/categories/read";
-import { deleteCategory } from "@/lib/firestore/categories/write";
+import { useBrands } from "@/lib/firestore/brands/read";
+import { deleteBrand } from "@/lib/firestore/brands/write";
 import { showConfirmToast } from "@/lib/helper/confirmToast";
 import { Edit2, Trash2 } from "lucide-react";
 import Image from "next/image";
@@ -22,7 +22,7 @@ interface TItem {
 ////////////// FUNCTIONAL COMPONENT //////////////
 function ListView() {
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
-  const { data: categories, isLoading, error } = useCategories();
+  const { data: brands, isLoading, error } = useBrands();
   const router = useRouter();
 
   if (isLoading)
@@ -39,25 +39,25 @@ function ListView() {
   async function handelDelete(id: string) {
     setIsDeleting(true);
     try {
-      await deleteCategory(id);
-      toast.success("Category deleted successfully!");
+      await deleteBrand(id);
+      toast.success("Brand deleted successfully!");
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("Error deleting category");
+        toast.error("Error deleting brand");
       }
     }
     setIsDeleting(false);
   }
 
   function handleUpdate(id: string) {
-    router.push(`/admin/categories?id=${id}`);
+    router.push(`/admin/brands?id=${id}`);
   }
 
   return (
     <div className="flex flex-1 flex-col rounded-md px-5">
-      <h1 className="text-xl">Categories</h1>
+      <h1 className="text-xl">Brands</h1>
       <table className="w-full border-separate border-spacing-y-3">
         <thead>
           <tr>
@@ -72,7 +72,7 @@ function ListView() {
           </tr>
         </thead>
         <tbody>
-          {categories?.map((item: TItem, index: number) => {
+          {brands?.map((item: TItem, index: number) => {
             return (
               <tr key={item?.id} className="">
                 <td className="rounded-l-lg border-1 border-y bg-white px-3 py-2 text-center">
@@ -82,7 +82,7 @@ function ListView() {
                   <div className="flex justify-center">
                     <Image
                       src={item?.imageURL}
-                      alt="image category"
+                      alt="image brand"
                       width={50}
                       height={50}
                       className="rounded-sm"
@@ -104,10 +104,7 @@ function ListView() {
                       size={"sm"}
                       disabled={isDeleting}
                       onClick={() =>
-                        showConfirmToast(
-                          () => handelDelete(item?.id),
-                          "category",
-                        )
+                        showConfirmToast(() => handelDelete(item?.id), "brand")
                       }
                     >
                       <Trash2 size={13} />
