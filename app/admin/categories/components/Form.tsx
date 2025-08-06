@@ -137,7 +137,7 @@ function Form() {
               height={80}
             />
           )}
-          <Input
+          <input
             ref={imageRef}
             id="category-image"
             type="file"
@@ -146,7 +146,7 @@ function Form() {
                 setImage(e.target.files[0]);
               }
             }}
-            className="h-8 cursor-pointer rounded-sm border-gray-300 text-sm!"
+            className="h-8 w-full cursor-pointer rounded-sm border px-4 py-1 text-sm! !font-normal outline-none"
           />
         </div>
         <div>

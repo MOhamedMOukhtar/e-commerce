@@ -117,8 +117,31 @@
   body {
     @apply bg-background text-foreground;
   }
+  h1 {
+    @apply text-2xl font-bold;
+  }
+  h2 {
+    @apply text-xl font-bold;
+  }
+  h3 {
+    @apply text-lg font-bold;
+  }
 }
 
 [data-sonner-toast] .description {
   color: white !important;
+}
+
+.tiptap p {
+  margin: 0;
+  padding: 4px;
+  line-height: 1.2;
+}
+
+.ProseMirror p.is-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
 }

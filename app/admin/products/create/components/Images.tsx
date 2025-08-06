@@ -1,21 +1,22 @@
-import { Input } from "@/components/ui/input";
 import Image from "next/image";
 
 interface PropsImages {
-  data: { title: string; description: string };
-  // handleData: (key: string, value: string | null) => void;
+  data: { title: string; summary: string };
   featureImage: File | null;
   setFeatureImage: React.Dispatch<React.SetStateAction<File | null>>;
   imageList: (File | null)[];
   setImageList: React.Dispatch<React.SetStateAction<(File | null)[]>>;
+  imageRef: React.RefObject<HTMLInputElement>;
+  imagesRef: React.RefObject<HTMLInputElement>;
 }
 
 function Images({
-  data,
   featureImage,
   setFeatureImage,
   imageList,
   setImageList,
+  imageRef,
+  imagesRef,
 }: PropsImages) {
   return (
     <section className="flex flex-1 flex-col gap-3 rounded-md border bg-white p-4">
@@ -37,6 +38,7 @@ function Images({
           Feature Image <span className="text-red-500">*</span>
         </label>
         <input
+          ref={imageRef}
           type="file"
           id="product-feature-image"
           name="product-feature-image"
@@ -45,7 +47,7 @@ function Images({
               setFeatureImage(e.target.files[0]);
             }
           }}
-          className="w-full rounded-sm border px-4 py-2 text-sm! outline-none"
+          className="w-full cursor-pointer rounded-sm border px-4 py-2 text-sm! outline-none"
         />
       </div>
       <div className="flex flex-col gap-1">
@@ -68,9 +70,10 @@ function Images({
           </div>
         )}
         <label className="text-sm text-gray-500" htmlFor="product-images">
-          Images <span className="text-red-500">*</span>
+          Images
         </label>
-        <Input
+        <input
+          ref={imagesRef}
           type="file"
           id="product-images"
           name="product-images"
@@ -80,7 +83,7 @@ function Images({
               setImageList(Array.from(e.target.files));
             }
           }}
-          className="w-full rounded-sm border px-4 py-2 text-sm! outline-none"
+          className="w-full cursor-pointer rounded-sm border px-4 py-2 text-sm! outline-none"
         />
       </div>
     </section>

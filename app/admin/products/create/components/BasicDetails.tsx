@@ -1,17 +1,10 @@
 import { Input } from "@/components/ui/input";
 import { useBrands } from "@/lib/firestore/brands/read";
 import { useCategories } from "@/lib/firestore/categories/read";
+import { TProduct } from "@/types/product/product";
 
 interface PropsBasicDetails {
-  data: {
-    title: string;
-    description: string;
-    brandId?: string;
-    categoryId?: string;
-    stock?: number;
-    price?: number;
-    salePrice?: number;
-  };
+  data: TProduct;
   handleData: (key: string, value: string | number | null) => void;
 }
 
@@ -43,7 +36,7 @@ function BasicDetails({ data, handleData }: PropsBasicDetails) {
         <Input
           id="product-title"
           type="text"
-          placeholder="Enter Product"
+          placeholder="Product"
           name="product-title"
           value={data.title ?? ""}
           onChange={(e) => handleData("title", e.target.value)}
@@ -51,16 +44,16 @@ function BasicDetails({ data, handleData }: PropsBasicDetails) {
         />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-sm text-gray-500" htmlFor="product-description">
-          Description <span className="text-red-500">*</span>
+        <label className="text-sm text-gray-500" htmlFor="product-summary">
+          Summary <span className="text-red-500">*</span>
         </label>
         <Input
-          id="product-description"
+          id="product-summary"
           type="text"
-          placeholder="Description"
-          name="product-description"
-          value={data.description ?? ""}
-          onChange={(e) => handleData("description", e.target.value)}
+          placeholder="Summary"
+          name="product-summary"
+          value={data.summary ?? ""}
+          onChange={(e) => handleData("summary", e.target.value)}
           className="w-full rounded-sm border px-4 py-2 text-sm! outline-none"
         />
       </div>
@@ -71,9 +64,9 @@ function BasicDetails({ data, handleData }: PropsBasicDetails) {
         <select
           id="product-brand"
           name="product-brand"
-          value={data.brandId ?? ""}
-          onChange={(e) => handleData("brandId", e.target.value)}
-          className="w-full rounded-sm border px-4 py-2 text-sm! outline-none"
+          value={data.brand ?? ""}
+          onChange={(e) => handleData("brand", e.target.value)}
+          className="w-full cursor-pointer rounded-sm border px-4 py-2 text-sm! outline-none"
         >
           <option value="">Select Brand</option>
           {brands?.map((brand: TBrand) => (
@@ -90,9 +83,9 @@ function BasicDetails({ data, handleData }: PropsBasicDetails) {
         <select
           id="product-category"
           name="product-category"
-          value={data.categoryId ?? ""}
-          onChange={(e) => handleData("categoryId", e.target.value)}
-          className="w-full rounded-sm border px-4 py-2 text-sm! outline-none"
+          value={data.category ?? ""}
+          onChange={(e) => handleData("category", e.target.value)}
+          className="w-full cursor-pointer rounded-sm border px-4 py-2 text-sm! outline-none"
         >
           <option value="">Select Category</option>
           {categories?.map((category: TCategory) => (
@@ -104,7 +97,7 @@ function BasicDetails({ data, handleData }: PropsBasicDetails) {
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-sm text-gray-500" htmlFor="product-stock">
-          Stock <span className="text-red-500">*</span>
+          Stock
         </label>
         <Input
           id="product-stock"
@@ -132,7 +125,7 @@ function BasicDetails({ data, handleData }: PropsBasicDetails) {
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-sm text-gray-500" htmlFor="product-sale-price">
-          Sale Price <span className="text-red-500">*</span>
+          Sale Price
         </label>
         <Input
           id="product-sale-price"
