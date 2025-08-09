@@ -1,7 +1,12 @@
 import Image from "next/image";
 
 interface PropsImages {
-  data: { title: string; summary: string };
+  data: {
+    title: string;
+    summary: string;
+    featureImage?: string;
+    imageList?: string[];
+  };
   featureImage: File | null;
   setFeatureImage: React.Dispatch<React.SetStateAction<File | null>>;
   imageList: (File | null)[];
@@ -17,11 +22,21 @@ function Images({
   setImageList,
   imageRef,
   imagesRef,
+  data,
 }: PropsImages) {
   return (
     <section className="flex flex-1 flex-col gap-3 rounded-md border bg-white p-4">
       <h1 className="font-semibold">Images</h1>
       <div className="flex flex-col gap-1">
+        {data?.featureImage && !featureImage && (
+          <Image
+            src={data?.featureImage}
+            alt="Category"
+            className="my-2 rounded-sm object-cover"
+            width={80}
+            height={80}
+          />
+        )}
         {featureImage && (
           <Image
             src={URL.createObjectURL(featureImage)}
@@ -51,14 +66,33 @@ function Images({
         />
       </div>
       <div className="flex flex-col gap-1">
-        {imageList.length > 0 && (
+        {imageList?.length === 0 && data?.imageList?.length != 0 && (
           <div className="flex flex-wrap gap-3">
-            {imageList.map((img) => {
-              if (img) {
+            {data?.imageList?.map((item) => {
+              console.log(item);
+              if (item) {
                 return (
                   <Image
-                    key={img.name}
-                    src={URL.createObjectURL(img)}
+                    key={item}
+                    src={item}
+                    alt="Category"
+                    className="my-2 rounded-sm object-cover"
+                    width={80}
+                    height={80}
+                  />
+                );
+              }
+            })}
+          </div>
+        )}
+        {imageList.length > 0 && (
+          <div className="flex flex-wrap gap-3">
+            {imageList.map((item) => {
+              if (item) {
+                return (
+                  <Image
+                    key={item.name}
+                    src={URL.createObjectURL(item)}
                     alt="Category"
                     className="my-2 rounded-sm object-cover"
                     width={80}

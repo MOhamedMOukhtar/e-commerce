@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { useProducts } from "@/lib/firestore/products/read";
 import { deleteProducts } from "@/lib/firestore/products/write";
 import { showConfirmToast } from "@/lib/helper/confirmToast";
+import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 import { Edit2, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface TItem {
@@ -23,9 +24,43 @@ interface TItem {
 
 ////////////// FUNCTIONAL COMPONENT //////////////
 function ListView() {
-  const [isDeleting, setIsDeleting] = useState<boolean>(false);
-  const { data: products, isLoading, error } = useProducts();
+  const [pageLimit, setPageLimit] = useState<number>(10);
+  const [lastSnapDocList, setLastSnapDocList] = useState<
+    QueryDocumentSnapshot<DocumentData>[]
+  >([]);
+
+  useEffect(() => {
+    setLastSnapDocList([]);
+  }, [pageLimit]);
+
   const router = useRouter();
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const {
+    data: products,
+    isLoading,
+    error,
+    lastSnapDoc,
+  } = useProducts({
+    pageLimit,
+    lastSnapDoc:
+      lastSnapDocList?.length === 0
+        ? null
+        : lastSnapDocList[lastSnapDocList.length - 1],
+  });
+
+  console.log(products?.length);
+  // console.log(lastSnapDocList);
+
+  const handleNextPage = () => {
+    const newStack = [...lastSnapDocList];
+    newStack.push(lastSnapDoc);
+    setLastSnapDocList(newStack);
+  };
+  const handlePrePage = () => {
+    const newStack = [...lastSnapDocList];
+    newStack.pop();
+    setLastSnapDocList(newStack);
+  };
 
   if (isLoading)
     return (
@@ -54,11 +89,11 @@ function ListView() {
   }
 
   function handleUpdate(id: string) {
-    router.push(`/admin/products/form?id=${id}`);
+    router.push(`/admin/products/create?id=${id}`);
   }
 
   return (
-    <div className="flex flex-1 flex-col rounded-md px-5">
+    <div className="flex flex-1 flex-col gap-5 rounded-md px-4">
       <table className="w-full border-separate border-spacing-y-3">
         <thead>
           <tr>
@@ -78,11 +113,11 @@ function ListView() {
         </thead>
         <tbody>
           {products?.map((item: TItem, index: number) => {
-            console.log(item);
+            // console.log(item);
             return (
               <tr key={item?.id} className="[&>td]:border-y [&>td]:bg-white">
                 <td className="rounded-l-lg px-3 py-2 text-center">
-                  {index + 1}
+                  {index + lastSnapDocList.length * pageLimit + 1}
                 </td>
                 <td>
                   <div className="flex justify-center">
@@ -140,6 +175,35 @@ function ListView() {
           })}
         </tbody>
       </table>
+      <div className="flex justify-between">
+        <Button
+          disabled={isLoading || lastSnapDocList.length === 0}
+          onClick={handlePrePage}
+          variant={"border"}
+        >
+          Previous
+        </Button>
+        <select
+          value={pageLimit}
+          onChange={(e) => setPageLimit(Number(e.target.value))}
+          className="rounded-sm border-1 border-black px-4"
+          name="perpage"
+          id="perpage"
+        >
+          <option value="3">3 Items</option>
+          <option value="5">5 Items</option>
+          <option value="10">10 Items</option>
+          <option value="20">20 Items</option>
+          <option value="100">100 Items</option>
+        </select>
+        <Button
+          disabled={isLoading || lastSnapDoc === null}
+          onClick={handleNextPage}
+          variant={"border"}
+        >
+          Next
+        </Button>
+      </div>
     </div>
   );
 }

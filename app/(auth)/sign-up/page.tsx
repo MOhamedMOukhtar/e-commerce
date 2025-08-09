@@ -78,7 +78,7 @@ export default function SignIn() {
       return;
     }
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    console.log(data);
+    // console.log(data);
     reset();
   }
 

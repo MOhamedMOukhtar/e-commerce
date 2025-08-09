@@ -72,7 +72,7 @@ export default function Sidebar() {
     },
   ];
   return (
-    <section className="flex h-screen w-[260px] flex-col gap-20 border-r bg-white py-3 ps-3">
+    <section className="sticky top-0 flex h-screen w-[260px] flex-col gap-20 border-r bg-white py-3 ps-3">
       <div className="flex items-center justify-center">
         {/* <Image
           src="/ikean-logo.png"

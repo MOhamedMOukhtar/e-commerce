@@ -60,9 +60,50 @@ export async function createNewProduct({
   await setDoc(doc(db, `products/${newId}`), {
     ...data,
     id: newId,
+    stock: data.stock || 0,
     featureImage: featureImageURL,
     imageList: imageURLList,
     timestampCreate: Timestamp.now(),
+  });
+}
+
+export async function updateProduct({
+  data,
+  featureImage,
+  imageList,
+}: PropCreateNewProduct) {
+  if (!data.title) {
+    throw new Error("Title is required");
+  }
+  if (!data?.id) {
+    throw new Error("ID is required");
+  }
+
+  let featureImageURL = data?.featureImage ?? "";
+
+  if (featureImage) {
+    const featureImageRef = ref(storage, `products/${featureImage?.name}`);
+    await uploadBytes(featureImageRef, featureImage);
+    featureImageURL = await getDownloadURL(featureImageRef);
+  }
+
+  const imageURLList = imageList?.length === 0 ? data?.imageList : [];
+
+  for (let i = 0; i < imageList.length; i++) {
+    const image = imageList[i];
+    if (image) {
+      const imageRef = ref(storage, `products/${image?.name}`);
+      await uploadBytes(imageRef, image);
+      const url = await getDownloadURL(imageRef);
+      imageURLList?.push(url);
+    }
+  }
+
+  await setDoc(doc(db, `products/${data?.id}`), {
+    ...data,
+    featureImage: featureImageURL,
+    imageList: imageURLList,
+    timestampUpdate: Timestamp.now(),
   });
 }
 
