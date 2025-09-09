@@ -26,7 +26,7 @@ function Images({
 }: PropsImages) {
   return (
     <section className="flex flex-1 flex-col gap-3 rounded-md border bg-white p-4">
-      <h1 className="font-semibold">Images</h1>
+      <h1 className="font-semibold text-black/70">Images</h1>
       <div className="flex flex-col gap-1">
         {data?.featureImage && !featureImage && (
           <Image
@@ -69,7 +69,6 @@ function Images({
         {imageList?.length === 0 && data?.imageList?.length != 0 && (
           <div className="flex flex-wrap gap-3">
             {data?.imageList?.map((item) => {
-              console.log(item);
               if (item) {
                 return (
                   <Image

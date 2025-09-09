@@ -13,7 +13,7 @@ interface TCategory {
   data: {
     title: string;
     subTitle: string;
-    products: string[];
+    slug: string;
     id?: string;
     imageURL?: string;
   };
@@ -27,8 +27,8 @@ export async function createNewCollection({ data, image }: TCategory) {
   if (!data.title) {
     throw new Error("title is required");
   }
-  if (!data.products || data.products.length === 0) {
-    throw new Error("Products is required");
+  if (!data.subTitle) {
+    throw new Error("Sub Title is required");
   }
 
   const newId = doc(collection(db, "ids")).id;
@@ -47,8 +47,8 @@ export async function updateCollection({ data, image }: TCategory) {
   if (!data.title) {
     throw new Error("title is required");
   }
-  if (!data.products || data.products.length === 0) {
-    throw new Error("Products is required");
+  if (!data.slug) {
+    throw new Error("Sub Title is required");
   }
   if (!data.id) {
     throw new Error("ID is required");

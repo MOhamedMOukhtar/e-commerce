@@ -8,7 +8,10 @@ import {
   updateCollection,
 } from "@/lib/firestore/collection/write";
 import { useProduct, useProducts } from "@/lib/firestore/products/read";
+import { useSectoins } from "@/lib/firestore/sections/read";
+import { useSubSections } from "@/lib/firestore/sub-sections/read";
 import { TProduct } from "@/types/product/product";
+import { TSections } from "@/types/sections";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -37,6 +40,8 @@ function Form() {
   const searchParams = useSearchParams();
   const id: string | null = searchParams.get("id");
   const router = useRouter();
+  const { data: sections } = useSectoins();
+  const { data: subSections } = useSubSections();
 
   useEffect(() => {
     async function fetchData() {
@@ -115,7 +120,7 @@ function Form() {
 
   return (
     <div className="flex w-[300px] flex-col gap-3 rounded-md bg-white p-5 lg:w-[400px]">
-      <h1 className="text-xl">{id ? "Update" : "Create"} Category</h1>
+      <h1 className="text-xl">{id ? "Update" : "Create"} Collection</h1>
       <form
         className="flex flex-col gap-4"
         onSubmit={(e) => {
@@ -195,6 +200,47 @@ function Form() {
             placeholder="Enter Sub Title"
             className="h-8 rounded-sm border-gray-300 text-sm! placeholder:text-gray-400 focus-visible:border-blue-400 focus-visible:ring-transparent"
           />
+        </div>
+
+        <div>
+          <label
+            className="mb-0.5 flex gap-1 text-sm text-gray-500/90"
+            htmlFor="collection-sections"
+          >
+            Select Section
+          </label>
+          <select
+            id="collection-sections"
+            className="h-8 w-full cursor-pointer rounded-sm border border-gray-300 pl-2 text-sm! text-gray-600 focus-visible:border-blue-400 focus-visible:ring-transparent"
+            onChange={(e) => handleData("section", e.target.value)}
+          >
+            <option value="">Select Section</option>
+            {sections?.map((section: TSections) => (
+              <option key={section.id} value={section.id}>
+                {section.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label
+            className="mb-0.5 flex gap-1 text-sm text-gray-500/90"
+            htmlFor="collection-sections"
+          >
+            Select Sub Section
+          </label>
+          <select
+            id="collection-subSections"
+            className="h-8 w-full cursor-pointer rounded-sm border border-gray-300 pl-2 text-sm! text-gray-600 focus-visible:border-blue-400 focus-visible:ring-transparent"
+            onChange={(e) => handleData("subSection", e.target.value)}
+          >
+            <option value="">Select Sub Section</option>
+            {subSections?.map((subSection: { id: string; title: string }) => (
+              <option key={subSection.id} value={subSection.id}>
+                {subSection.title}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="flex flex-wrap gap-2">
           {data?.products?.map((product) => {

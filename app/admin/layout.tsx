@@ -17,6 +17,8 @@ function AdminChecking({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
+  console.log(user);
+
   useEffect(() => {
     if (!user && !isLoading) {
       router.push("/login");

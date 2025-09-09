@@ -10,10 +10,16 @@ import { PulseLoader } from "react-spinners";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+} from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useAuth } from "@/context/AutnContext";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { createUser } from "@/lib/firestore/user/write";
 
 const logInSchema = z.object({
   email: z
@@ -41,21 +47,36 @@ function SignIn() {
   });
 
   useEffect(() => {
-    if (!isLoading && user) {
-      router.push("/admin");
+    if (user) {
+      router.push("/account");
     }
-  }, [user, isLoading, router]);
+  }, [user, router]);
 
   async function onSubmit(data: TLogInSchema) {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    // console.log(data);
-    reset();
+    try {
+      await signInWithEmailAndPassword(auth, data?.email, data?.password);
+      toast.success("Logged in successfully!");
+      reset();
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Error logging in");
+      }
+    }
   }
 
   async function handleLogin() {
     setIsLoading(true);
     try {
-      await signInWithPopup(auth, new GoogleAuthProvider());
+      const credential = await signInWithPopup(auth, new GoogleAuthProvider());
+      console.log(credential);
+      console.log(credential.user);
+      await createUser({
+        uid: credential.user?.uid,
+        displayName: credential.user?.displayName,
+        photoURL: credential.user?.photoURL,
+      });
     } catch (error) {
       console.error("Login failed:", error);
     }
@@ -120,16 +141,11 @@ function SignIn() {
       <Button
         onClick={handleLogin}
         disabled={isLoading}
-        className="relative w-full cursor-pointer rounded-full p-5 disabled:bg-gray-950"
+        className="w-full cursor-pointer rounded-full p-5 disabled:bg-gray-950"
       >
-        <PulseLoader
-          color="#fff"
-          size={8}
-          loading={isLoading}
-          className="absolute top-1/2 left-4 -translate-y-1/2"
-        />
+        {/* <PulseLoader color="#fff" size={8} loading={true} className={``} /> */}
         <FcGoogle size={25} />
-        Sign in with Google
+        <span>Sign in with Google</span>
       </Button>
       <p className="text-muted-foreground after:content-[' '] before:content-[' '] relative text-center text-sm before:absolute before:top-1/2 before:left-0 before:h-[1px] before:w-[38%] before:bg-black/30 after:absolute after:top-1/2 after:right-0 after:h-[1px] after:w-[38%] after:bg-black/30">
         New at IKEAN?

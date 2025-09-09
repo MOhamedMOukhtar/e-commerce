@@ -4,6 +4,12 @@ import { useEffect, useState, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import { useAuth } from "@/context/AutnContext";
+import { useAdmin } from "@/lib/firestore/admins/read";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { toast } from "sonner";
+import { LogOut } from "lucide-react";
 
 export default function AdminLayout({
   children,
@@ -13,6 +19,8 @@ export default function AdminLayout({
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const pathname = usePathname();
   const sidebarRef = useRef<HTMLDivElement | null>(null);
+  const { user } = useAuth();
+  const { data: admin, error, isLoading } = useAdmin({ email: user?.email });
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -37,6 +45,32 @@ export default function AdminLayout({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+  if (!admin)
+    return (
+      <>
+        <div>You are not admin!</div>
+        <button
+          onClick={async () => {
+            try {
+              await signOut(auth);
+              toast.success("Logout successfully", {
+                style: {
+                  border: "3px solid #dedede",
+                },
+              });
+            } catch {
+              toast.error("Failed to logout");
+            }
+          }}
+          className="flex cursor-pointer items-center gap-1 rounded-l-md p-2 font-semibold transition-all duration-200 ease-out hover:bg-gray-200"
+        >
+          <LogOut className="h-4 w-4" /> Logout
+        </button>
+      </>
+    );
 
   return (
     <main className="relative flex">

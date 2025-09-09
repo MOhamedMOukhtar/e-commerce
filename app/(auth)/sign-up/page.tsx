@@ -11,6 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import PasswordCheck from "@/components/PasswordCheck";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { createUser } from "@/lib/firestore/user/write";
+import { useRouter } from "next/navigation";
 
 const passwordSchema = z
   .string()
@@ -52,6 +56,7 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [showPasswordCheck, setShowPasswordCheck] = useState(false);
+  const router = useRouter();
 
   const passwordChecks = {
     minLength: password.length >= 8 && password.length <= 20,
@@ -77,8 +82,20 @@ export default function SignIn() {
       });
       return;
     }
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    // console.log(data);
+    const credential = await createUserWithEmailAndPassword(
+      auth,
+      data?.email,
+      data?.password,
+    );
+    await updateProfile(credential.user, { displayName: data?.firstName });
+    const user = credential.user;
+    const userName = data?.firstName + " " + data?.lastName;
+    await createUser({
+      uid: user?.uid,
+      displayName: userName,
+      photoURL: user?.photoURL,
+    });
+    router.push("/account");
     reset();
   }
 
@@ -167,9 +184,9 @@ export default function SignIn() {
               className="text-muted-foreground absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer rounded-full p-1 hover:bg-gray-200"
             >
               {showPassword ? (
-                <EyeOff className="h-6 w-6" />
+                <Eye className="h-5 w-5" />
               ) : (
-                <Eye className="h-6 w-6" />
+                <EyeOff className="h-5 w-5" />
               )}
             </button>
           </div>

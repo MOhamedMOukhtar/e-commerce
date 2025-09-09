@@ -20,11 +20,13 @@ interface TItem {
   orders: number;
   featureImage: string;
   timestampCreate: string;
+  isFeatured: string;
+  salePrice: number;
 }
 
 ////////////// FUNCTIONAL COMPONENT //////////////
 function ListView() {
-  const [pageLimit, setPageLimit] = useState<number>(10);
+  const [pageLimit, setPageLimit] = useState<number>(100);
   const [lastSnapDocList, setLastSnapDocList] = useState<
     QueryDocumentSnapshot<DocumentData>[]
   >([]);
@@ -47,9 +49,6 @@ function ListView() {
         ? null
         : lastSnapDocList[lastSnapDocList.length - 1],
   });
-
-  console.log(products?.length);
-  // console.log(lastSnapDocList);
 
   const handleNextPage = () => {
     const newStack = [...lastSnapDocList];
@@ -77,12 +76,12 @@ function ListView() {
     setIsDeleting(true);
     try {
       await deleteProducts(id);
-      toast.success("Category deleted successfully!");
+      toast.success("Product deleted successfully!");
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("Error deleting category");
+        toast.error("Error deleting Product");
       }
     }
     setIsDeleting(false);
@@ -113,7 +112,6 @@ function ListView() {
         </thead>
         <tbody>
           {products?.map((item: TItem, index: number) => {
-            // console.log(item);
             return (
               <tr key={item?.id} className="[&>td]:border-y [&>td]:bg-white">
                 <td className="rounded-l-lg px-3 py-2 text-center">
@@ -123,15 +121,34 @@ function ListView() {
                   <div className="flex justify-center">
                     <Image
                       src={item?.featureImage}
-                      alt="image category"
+                      alt="image product"
                       width={30}
                       height={30}
                       className="rounded-xs"
                     />
                   </div>
                 </td>
-                <td className="px-3 py-2">{item.title}</td>
-                <td className="px-3 py-2">{item?.price}</td>
+                <td className="px-3 py-2">
+                  {item.title}
+                  {item.isFeatured === "true" && (
+                    <span className="test-[10px] ml-2 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-400 px-3 py-0.5 text-white">
+                      Featured
+                    </span>
+                  )}
+                </td>
+                {/* <td className="px-3 py-2">{item?.price}</td> */}
+                <td className="px-3 py-2">
+                  {item?.salePrice ? (
+                    <div className="relative w-fit rounded-xl bg-red-400 px-3 font-semibold">
+                      {item?.salePrice}
+                      <span className="absolute top-4 left-full text-sm text-black/60">
+                        {item?.price}
+                      </span>
+                    </div>
+                  ) : (
+                    item?.price
+                  )}
+                </td>
                 <td className="px-3 py-2">{item?.stock}</td>
                 <td className="px-3 py-2">{item?.orders ?? 0}</td>
                 <td className="px-3 py-2">
@@ -162,7 +179,7 @@ function ListView() {
                       onClick={() =>
                         showConfirmToast(
                           () => handelDelete(item?.id),
-                          "category",
+                          "product",
                         )
                       }
                     >

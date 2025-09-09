@@ -9,28 +9,24 @@ import {
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
-type PropCreateNewProduct = {
+interface PropCreateNewProduct {
   data: TProduct;
   featureImage: File | null;
   imageList: (File | null)[];
-};
+  measurementImage: File | null;
+}
 
 export async function createNewProduct({
   data,
   featureImage,
   imageList,
+  measurementImage,
 }: PropCreateNewProduct) {
   if (!data.title) {
     throw new Error("Title is required");
   }
   if (!data.summary) {
     throw new Error("Summary is required");
-  }
-  if (!data.brand) {
-    throw new Error("Brand is required");
-  }
-  if (!data.category) {
-    throw new Error("Category is required");
   }
   if (!data.price) {
     throw new Error("Price is required");
@@ -42,6 +38,13 @@ export async function createNewProduct({
   const featureImageRef = ref(storage, `products/${featureImage.name}`);
   await uploadBytes(featureImageRef, featureImage);
   const featureImageURL = await getDownloadURL(featureImageRef);
+
+  const measurementImageRef = ref(
+    storage,
+    `products/${measurementImage?.name}`,
+  );
+  await uploadBytes(measurementImageRef, measurementImage);
+  const measurementImageURL = await getDownloadURL(measurementImageRef);
 
   const imageURLList = [];
 
@@ -63,6 +66,7 @@ export async function createNewProduct({
     stock: data.stock || 0,
     featureImage: featureImageURL,
     imageList: imageURLList,
+    measurementImage: measurementImageURL,
     timestampCreate: Timestamp.now(),
   });
 }
@@ -72,6 +76,7 @@ export async function updateProduct({
   featureImage,
   imageList,
 }: PropCreateNewProduct) {
+  console.log(data);
   if (!data.title) {
     throw new Error("Title is required");
   }

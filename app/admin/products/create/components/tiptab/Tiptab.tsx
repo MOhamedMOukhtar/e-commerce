@@ -35,10 +35,10 @@ export default function RichTextEditor({
       }),
       Highlight,
       Placeholder.configure({
-        placeholder: "Write your description here...",
+        placeholder: "Write something here......",
       }),
     ],
-    content: content,
+    content: "",
     editorProps: {
       attributes: {
         class: "min-h-[156px] border rounded-md bg-slate-50 py-2 px-3",
@@ -50,9 +50,15 @@ export default function RichTextEditor({
     immediatelyRender: false,
   });
 
+  // 👇 Keep editor in sync when `content` prop changes
   useEffect(() => {
-    if (editor && content === "") {
-      editor.commands.clearContent();
+    if (!editor) return;
+
+    if (content !== undefined && content !== null) {
+      const current = editor.getHTML();
+      if (content !== current) {
+        editor.commands.setContent(content);
+      }
     }
   }, [content, editor]);
 

@@ -7,10 +7,11 @@ import {
   Star,
   User,
   PackageOpen,
-  Layers2,
   Cat,
   LogOut,
   ShieldCheck,
+  TableOfContents,
+  TextSelect,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -36,14 +37,20 @@ export default function Sidebar() {
       icon: <PackageOpen className="h-5 w-5" />,
     },
     {
-      name: "Categories",
-      link: "/admin/categories",
-      icon: <Layers2 className="h-5 w-5" />,
+      name: "Sections",
+      link: "/admin/sections",
+      icon: <TableOfContents className="h-5 w-5" />,
+    },
+
+    {
+      name: "Sub Sections",
+      link: "/admin/sub-sections",
+      icon: <TextSelect className="h-5 w-5" />,
     },
     {
-      name: "Brands",
-      link: "/admin/brands",
-      icon: <Cat className="h-5 w-5" />,
+      name: "Sub SubSections",
+      link: "/admin/sub-subsections",
+      icon: <TextSelect className="h-5 w-5" />,
     },
     {
       name: "Orders",
@@ -72,8 +79,8 @@ export default function Sidebar() {
     },
   ];
   return (
-    <section className="sticky top-0 flex h-screen w-[260px] flex-col gap-20 border-r bg-white py-3 ps-3">
-      <div className="flex items-center justify-center">
+    <section className="sticky top-0 flex h-screen w-[260px] flex-col gap-12 border-r bg-white py-3 ps-3">
+      <div className="mb-5 flex items-center justify-center">
         {/* <Image
           src="/ikean-logo.png"
           alt="logo"
@@ -81,9 +88,11 @@ export default function Sidebar() {
           height={70}
           priority
         /> */}
-        <h1 className="pe-1 text-3xl font-bold">IKEAN STORE</h1>
+        <Link href={"/"}>
+          <h1 className="pe-1 text-3xl font-bold">IKEAN STORE</h1>
+        </Link>
       </div>
-      <ul className="flex flex-1 flex-col gap-3">
+      <ul className="flex flex-1 flex-col gap-2">
         {menuList.map((item) => (
           <Sections item={item} key={item.name} />
         ))}

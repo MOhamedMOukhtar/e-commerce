@@ -1,12 +1,14 @@
-import MainHeader from "@/components/Header";
+import SectionSpecialOffers from "./components/SectionSpecialOffers";
 
 export default function Home() {
   return (
-    <div>
-      <main>
-        <MainHeader />
-        <h1>E Commerce </h1>
-      </main>
-    </div>
+    <main>
+      <div className="mt-15 px-10">
+        <h1 className="text-4xl font-bold">Welcome to IKEA Egypt</h1>
+      </div>
+      <div className="mt-25 px-10">
+        <SectionSpecialOffers />
+      </div>
+    </main>
   );
 }
