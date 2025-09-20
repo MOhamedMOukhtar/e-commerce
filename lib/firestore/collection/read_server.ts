@@ -1,12 +1,5 @@
 import { db } from "@/lib/firebase";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 
 export async function getCollection(id: string) {
   const data = await getDoc(doc(db, `collections/${id}`));

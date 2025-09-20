@@ -1,19 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import SecRooms from "./components/SecRooms";
 import SecTipsIdeas from "./components/SecTipsIdeas";
 import SecOffersCampaigns from "./components/SecOffersCampaigns";
 import Products from "./components/secProducts/Products";
 import ExploreSubSection from "./components/secProducts/components/ExploreSubSection";
 import { usePathname } from "next/navigation";
-// import { useSearchParams } from "next/navigation";
 
 function Sections() {
   const [sectionTitle, setSectionTitle] = useState<string | null>("products");
   const [exploreSubSection, setExploreSubSection] = useState<string>("");
   const [clickedItem, setClickedItem] = useState<string>("");
   const pathname = usePathname();
+  const [showSections, startHover, endHover, hover, end, display] =
+    useHoverTimeout(600);
 
   useEffect(() => {
     if (pathname === "/") {
@@ -29,12 +30,22 @@ function Sections() {
   if (pathname.includes("/admin")) return null;
 
   return (
-    <main className="mx-10 h-60 space-y-7">
+    <main
+      className={`mx-12 space-y-7 ${showSections ? "min-h-[240px]" : "min-h-[70px]"} transition-[min-height] duration-200 ease-in-out`}
+      onMouseEnter={() => {
+        startHover();
+        hover();
+      }}
+      onMouseLeave={() => {
+        endHover();
+        end();
+      }}
+    >
       <nav className="flex w-fit items-start justify-start gap-7 border-b border-gray-300 pt-4 text-base font-medium text-black/60">
         <div
           className={`flex items-center gap-2 px-1 pb-4 ${
-            sectionTitle === "products" ||
-            sectionTitle === "Explore Storage furniture"
+            showSections &&
+            (sectionTitle === "products" || sectionTitle === "explore")
               ? "cursor-default border-b-2 border-[#0058A3] text-black"
               : "cursor-pointer hover:text-black/75"
           }`}
@@ -52,7 +63,7 @@ function Sections() {
         </div>
         <div
           className={`flex items-center gap-2 px-1 pb-4 ${
-            sectionTitle === "rooms"
+            showSections && sectionTitle === "rooms"
               ? "cursor-default border-b-2 border-[#0058A3] text-black"
               : "cursor-pointer hover:text-black/75"
           }`}
@@ -70,7 +81,7 @@ function Sections() {
         </div>
         <div
           className={`flex items-center gap-2 px-1 pb-4 ${
-            sectionTitle === "tips-ideas"
+            showSections && sectionTitle === "tips-ideas"
               ? "cursor-default border-b-2 border-[#0058A3] text-black"
               : "cursor-pointer hover:text-black/75"
           }`}
@@ -80,7 +91,7 @@ function Sections() {
         </div>
         <div
           className={`flex items-center gap-2 px-1 pb-4 ${
-            sectionTitle === "offers-campaigns"
+            showSections && sectionTitle === "offers-campaigns"
               ? "cursor-default border-b-2 border-[#0058A3] text-black"
               : "cursor-pointer hover:text-black/75"
           }`}
@@ -96,6 +107,8 @@ function Sections() {
           <Products
             setSectionTitle={setSectionTitle}
             handleExplore={handleExplore}
+            showSections={showSections}
+            display={display}
           />
         )}
         {sectionTitle === "explore" && (
@@ -104,11 +117,18 @@ function Sections() {
             exploreSubSection={exploreSubSection}
             setClickedItem={setClickedItem}
             clickedItem={clickedItem}
+            className={`${showSections ? "h-fit" : "h-0 overflow-hidden"} transition duration-200 ease-in-out`}
           />
         )}
-        {sectionTitle === "rooms" && <SecRooms />}
-        {sectionTitle === "tips-ideas" && <SecTipsIdeas />}
-        {sectionTitle === "offers-campaigns" && <SecOffersCampaigns />}
+        {sectionTitle === "rooms" && (
+          <SecRooms showSections={showSections} display={display} />
+        )}
+        {sectionTitle === "tips-ideas" && (
+          <SecTipsIdeas showSections={showSections} display={display} />
+        )}
+        {sectionTitle === "offers-campaigns" && (
+          <SecOffersCampaigns showSections={showSections} display={display} />
+        )}
       </div>
     </main>
   );
@@ -116,5 +136,60 @@ function Sections() {
 
 export default Sections;
 
-// 0058A3
-// 004F93 (hover)
+function useHoverTimeout(delay = 500) {
+  const [isHovered, setIsHovered] = useState(false);
+  const [hide, setHide] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef2 = useRef<NodeJS.Timeout | null>(null);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (pathname.includes("/product")) {
+      setIsHovered(false);
+      setHide(false);
+    } else {
+      setIsHovered(true);
+      setHide(true);
+    }
+  }, [pathname]);
+
+  const startTimeout = useCallback(() => {
+    timeoutRef.current = setTimeout(() => {
+      setIsHovered(true);
+    }, delay);
+  }, [delay]);
+
+  const startTimeout2 = useCallback(() => {
+    timeoutRef2.current = setTimeout(() => {
+      setHide(true);
+    }, 0);
+  }, []);
+
+  const endHover = useCallback(() => {
+    if (!pathname.includes("/product")) return;
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setTimeout(() => setIsHovered(false), delay);
+  }, [pathname, delay]);
+
+  const endHover2 = useCallback(() => {
+    if (!pathname.includes("/product")) return;
+    if (timeoutRef2.current) {
+      clearTimeout(timeoutRef2.current);
+      timeoutRef2.current = null;
+    }
+    setTimeout(() => setHide(false), delay + 100);
+  }, [pathname, delay]);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  return [isHovered, startTimeout, endHover, startTimeout2, endHover2, hide];
+}

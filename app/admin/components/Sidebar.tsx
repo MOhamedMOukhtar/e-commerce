@@ -28,7 +28,7 @@ export default function Sidebar() {
   const menuList: MenuItem[] = [
     {
       name: "Dashboard",
-      link: "/admin",
+      link: "/admin/dashboard",
       icon: <LayoutDashboard className="h-5 w-5" />,
     },
     {
@@ -81,13 +81,6 @@ export default function Sidebar() {
   return (
     <section className="sticky top-0 flex h-screen w-[260px] flex-col gap-12 border-r bg-white py-3 ps-3">
       <div className="mb-5 flex items-center justify-center">
-        {/* <Image
-          src="/ikean-logo.png"
-          alt="logo"
-          width={70}
-          height={70}
-          priority
-        /> */}
         <Link href={"/"}>
           <h1 className="pe-1 text-3xl font-bold">IKEAN STORE</h1>
         </Link>
@@ -121,7 +114,10 @@ export default function Sidebar() {
 ////////////// FUNCTIONAL COMPONENT //////////////
 function Sections({ item }: { item: MenuItem }) {
   const pathName = usePathname();
-  const isActive = pathName === item.link;
+  const isActive = pathName.startsWith(item.link);
+
+  console.log(pathName);
+  console.log(item.link);
 
   return (
     <Link href={item.link} key={item.name}>

@@ -106,12 +106,14 @@ const product = [
 
 export default function Products({
   setSectionTitle,
-
   handleExplore,
+  showSections,
+  display,
 }: {
   setSectionTitle: Dispatch<SetStateAction<string | null>>;
-
   handleExplore: (subsection: string, item: string) => void;
+  showSections: boolean | (() => void);
+  display: boolean | (() => void);
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -312,7 +314,7 @@ export default function Products({
 
   return (
     <div
-      className="relative"
+      className={`relative mb-[-17px] transition-all duration-100 ease-out ${showSections ? "opacity-100" : "opacity-0"} ${display ? "block" : "hidden"}`}
       onMouseLeave={() => {
         setShowArrowLeft(false);
         setShowArrowRight(false);
@@ -325,6 +327,9 @@ export default function Products({
           return contentLeft + clientWidth < contentWidth - 2;
         });
         if (contentWidth === 0) setShowArrowRight(true);
+      }}
+      style={{
+        maxHeight: showSections ? "120px" : "0px",
       }}
     >
       <section
@@ -348,18 +353,20 @@ export default function Products({
       </section>
 
       {/* Scrollbar */}
-      <CustomScroll
-        handleScrollButton={handleScrollButton}
-        activeProductId={activeProductId}
-        scrollTrackRef={scrollTrackRef}
-        handleTrackClick={handleTrackClick}
-        scrollThumbRef={scrollThumbRef}
-        handleThumbMousedown={handleThumbMousedown}
-        thumbWidth={thumbWidth}
-        showArrowLeft={showArrowLeft}
-        showArrowRight={showArrowRight}
-        fromParent={fromParent}
-      />
+      <div>
+        <CustomScroll
+          handleScrollButton={handleScrollButton}
+          activeProductId={activeProductId}
+          scrollTrackRef={scrollTrackRef}
+          handleTrackClick={handleTrackClick}
+          scrollThumbRef={scrollThumbRef}
+          handleThumbMousedown={handleThumbMousedown}
+          thumbWidth={thumbWidth}
+          showArrowLeft={showArrowLeft}
+          showArrowRight={showArrowRight}
+          fromParent={fromParent}
+        />
+      </div>
     </div>
   );
 }

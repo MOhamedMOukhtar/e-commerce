@@ -53,6 +53,20 @@ function BasicDetails({ data, handleData }: PropsBasicDetails) {
         />
       </div>
       <div className="flex flex-col gap-1">
+        <label className="text-sm text-gray-500" htmlFor="product-shortSummary">
+          Short Summary
+        </label>
+        <Input
+          id="product-shortSummary"
+          type="text"
+          placeholder="Short Summary"
+          name="product-shortSummary"
+          value={data.shortSummary ?? ""}
+          onChange={(e) => handleData("shortSummary", e.target.value)}
+          className="w-full rounded-sm border px-4 py-2 text-sm! outline-none"
+        />
+      </div>
+      <div className="flex flex-col gap-1">
         <label className="text-sm text-gray-500" htmlFor="product-slug">
           Slug <span className="text-red-500">*</span>
         </label>
@@ -172,6 +186,24 @@ function BasicDetails({ data, handleData }: PropsBasicDetails) {
           name="product-is-featured-product"
           value={String(data.isFeatured ?? false)}
           onChange={(e) => handleData("isFeatured", e.target.value)}
+          className="w-full rounded-sm border px-4 py-2 text-sm! outline-none"
+        >
+          <option value={"false"}>No</option>
+          <option value={"true"}>Yes</option>
+        </select>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label
+          className="text-sm text-gray-500"
+          htmlFor="product-recomended-product"
+        >
+          Recomended Product
+        </label>
+        <select
+          id="product-recomended-product"
+          name="product-recomended-product"
+          value={String(data.recommended ?? false)}
+          onChange={(e) => handleData("recommended", e.target.value)}
           className="w-full rounded-sm border px-4 py-2 text-sm! outline-none"
         >
           <option value={"false"}>No</option>

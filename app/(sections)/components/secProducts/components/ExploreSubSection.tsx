@@ -16,17 +16,20 @@ import CustomScroll from "../CustomScroll";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TSubSection } from "@/types/subSection/subSection";
 import { getSubSection } from "@/lib/firestore/sub-sections/read_server";
+import { cn } from "@/lib/utils";
 
 function ExploreStorageFurniture({
   setSectionTitle,
   exploreSubSection,
   setClickedItem,
   clickedItem,
+  className,
 }: {
   setSectionTitle: Dispatch<SetStateAction<string | null>>;
   exploreSubSection: string;
   setClickedItem: Dispatch<SetStateAction<string>>;
   clickedItem: string;
+  className?: string;
 }) {
   const contentRef = useRef<HTMLDivElement>(null);
   const scrollThumbRef = useRef<HTMLDivElement>(null);
@@ -254,7 +257,7 @@ function ExploreStorageFurniture({
   }
 
   return (
-    <div className="grid grid-cols-[15%_83%] gap-5">
+    <div className={cn(`grid grid-cols-[15%_83%] gap-5`, className)}>
       <div className="flex items-start justify-evenly border-r">
         <div
           onClick={() =>

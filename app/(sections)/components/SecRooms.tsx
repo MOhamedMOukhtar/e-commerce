@@ -22,11 +22,20 @@ const product = [
     title: "Hallway",
   },
 ];
-function SecRooms() {
+function SecRooms({
+  showSections,
+  display,
+}: {
+  showSections: boolean | (() => void);
+  display: boolean | (() => void);
+}) {
   return (
     <section
-      className="content overflow-x-auto pb-5"
+      className={`content mb-[-37px] overflow-x-auto pb-5 transition-all duration-100 ease-out ${showSections ? "opacity-100" : "opacity-0"} ${display ? "block" : "hidden"}`}
       id="custom-scrollbars-content"
+      style={{
+        maxHeight: showSections ? "120px" : "0px",
+      }}
     >
       <ul className="flex gap-5">
         {product.map((item, index) => (

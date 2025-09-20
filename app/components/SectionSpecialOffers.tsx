@@ -1,12 +1,20 @@
+import { Button } from "@/components/ui/button";
 import IndicatorTooltip from "./IndicatorTooltip";
 
 export default function SectionSpecialOffers() {
   return (
     <div className="mb-20">
-      <h2 className="mb-2">We&apos;ve got special offers for you</h2>
-      <p className="mb-8">
-        Home rearrangements made easier with our special offers
-      </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="mb-2">We&apos;ve got special offers for you</h2>
+          <p className="mb-8">
+            Home rearrangements made easier with our special offers
+          </p>
+        </div>
+        <Button variant={"border"} className="rounded-full border">
+          special offers
+        </Button>
+      </div>
       <div className="my-element relative grid grid-cols-[repeat(12,minmax(0,1fr))] gap-5 text-center">
         <IndicatorTooltip
           image={
@@ -21,6 +29,7 @@ export default function SectionSpecialOffers() {
               summery: "Bedside table",
               price: "10,995",
               previousPrice: "13,995",
+              id: "1rOoy80nPBOfytFMZENC",
             },
           ]}
         />
@@ -41,6 +50,7 @@ export default function SectionSpecialOffers() {
               name: "FISKBO",
               summery: "Frame",
               price: "329",
+              id: "XrfXm9f968AlHGpjLT26",
             },
             {
               side: "bottom",
@@ -51,6 +61,7 @@ export default function SectionSpecialOffers() {
               price: "12,695",
               previousPrice: "14,395",
               show: true,
+              id: "bhAJ6j75VcNmFAoeqPGn",
             },
           ]}
         />
@@ -66,6 +77,7 @@ export default function SectionSpecialOffers() {
               name: "KORKEN",
               summery: "Jar with lid",
               price: "249",
+              id: "cqEh5rzSMSmTkb2SnxXh",
             },
             {
               side: "top",
@@ -75,6 +87,7 @@ export default function SectionSpecialOffers() {
               summery: "Kitchen countertop organiser",
               price: "999",
               previousPrice: "1,399",
+              id: "79NPiLBYVSyUizPB6dpb",
             },
             {
               side: "bottom",
@@ -83,6 +96,7 @@ export default function SectionSpecialOffers() {
               name: "TREBENT",
               summery: "Chopsticks 4 pairs",
               price: "229",
+              id: "Lph1BHSCcz2QgfingpeE",
             },
           ]}
         />
@@ -99,6 +113,7 @@ export default function SectionSpecialOffers() {
               summery: "Chair",
               price: "5,995",
               previousPrice: "7,495",
+              id: "KUce4Fe3sQRXz7yuSz7e",
             },
             {
               side: "bottom",
@@ -107,6 +122,7 @@ export default function SectionSpecialOffers() {
               name: "KLIMPFJÄLL",
               summery: "Dining table",
               price: "45,995",
+              id: "xrOPXCJaZxeRlgcZt02U",
             },
           ]}
         />
@@ -123,6 +139,7 @@ export default function SectionSpecialOffers() {
               summery: "Cabinet with sliding doors",
               price: "8,995",
               previousPrice: "11,495",
+              id: "nlJb7sASlKVIc0yNKzez",
             },
           ]}
         />
@@ -138,6 +155,7 @@ export default function SectionSpecialOffers() {
               price: "17,995",
               previousPrice: "22,995",
               show: true,
+              id: "e40LsXNXxOy2YqlJRqJA",
             },
             {
               side: "top",
@@ -147,6 +165,7 @@ export default function SectionSpecialOffers() {
               summery: "Seat cushion, outdoor",
               price: "3,200",
               previousPrice: "3,700",
+              id: "OgDT0iQUzDYje6sAzcQI",
             },
           ]}
         />
@@ -164,42 +183,11 @@ export default function SectionSpecialOffers() {
               price: "319",
               previousPrice: "399",
               show: false,
+              id: "87FDKF3qYPhFnnjMnLgM",
             },
           ]}
         />
       </div>
     </div>
   );
-}
-
-{
-  /* <div>
-  <Image
-    src={
-      "https://www.ikea.com/ext/ingkadam/m/535522ecec35c634/original/PH184732-crop002.jpg?f=xxs"
-    }
-    fill
-    alt="special offers"
-    className="object-cover"
-  />
-  <CustomTooltip
-    side="top"
-    align="start"
-    title="NORRARYD"
-    summery="Chair"
-    price="5,995"
-    previousPrice="7,495"
-  >
-    <Indicator className="top-[62%] right-[18%]" />
-  </CustomTooltip>
-  <CustomTooltip
-    side="bottom"
-    align="center"
-    title="KLIMPFJÄLL"
-    summery="Dining table"
-    price="45,995"
-  >
-    <Indicator className="top-[44%] right-[0]" />
-  </CustomTooltip>
-</div>; */
 }

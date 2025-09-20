@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { TSubSubSection } from "@/types/sub-subsection/subSubSection";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -15,6 +16,7 @@ interface CustomScrollProps {
   contentRef?: React.RefObject<HTMLDivElement | null>;
   subSubSections?: TSubSubSection[];
   fromParent?: boolean;
+  arrowPosition?: string;
 }
 
 function CustomScroll({
@@ -30,6 +32,7 @@ function CustomScroll({
   contentRef,
   subSubSections,
   fromParent = false,
+  arrowPosition = "-top-28",
 }: CustomScrollProps) {
   const [showScrollbar, setShowScrollbar] = useState(false);
 
@@ -48,7 +51,10 @@ function CustomScroll({
   return (
     <div className="scrollbar relative">
       <button
-        className={`button button--left absolute -top-28 -left-5 rounded-full bg-black p-2 transition-all duration-200 ease-out hover:bg-[#333333] ${showArrowLeft ? "cursor-pointer" : "opacity-0"}`}
+        className={cn(
+          `button button--left absolute -top-28 -left-5 rounded-full bg-black p-2 transition-all duration-200 ease-out hover:bg-[#333333] ${showArrowLeft ? "cursor-pointer" : "opacity-0"}`,
+          arrowPosition,
+        )}
         onClick={() => handleScrollButton("left")}
       >
         <ChevronLeft color="white" />
@@ -75,7 +81,10 @@ function CustomScroll({
       </div>
 
       <button
-        className={`button button--right absolute -top-28 -right-5 rounded-full bg-black p-2 transition-all duration-200 ease-out hover:bg-[#333333] ${showArrowRight ? "cursor-pointer" : "opacity-0"}`}
+        className={cn(
+          `button button--right absolute -top-28 -right-5 rounded-full bg-black p-2 transition-all duration-200 ease-out hover:bg-[#333333] ${showArrowRight ? "cursor-pointer" : "opacity-0"}`,
+          arrowPosition,
+        )}
         onClick={() => handleScrollButton("right")}
       >
         <ChevronRight color="white" />
@@ -85,3 +94,5 @@ function CustomScroll({
 }
 
 export default CustomScroll;
+
+//-top-28

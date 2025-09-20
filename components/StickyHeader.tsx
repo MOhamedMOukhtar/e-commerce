@@ -5,13 +5,40 @@ import { Input } from "./ui/input";
 import { Heart, Search, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 function StickyHeader() {
   const pathname = usePathname();
 
+  const [scrollDir, setScrollDir] = useState("up");
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+
+    const updateScrollDir = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY) {
+        setScrollDir("down");
+      } else if (currentScrollY < lastScrollY) {
+        setScrollDir("up");
+      }
+
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener("scroll", updateScrollDir);
+
+    return () => window.removeEventListener("scroll", updateScrollDir);
+  }, []);
+
+  console.log(scrollDir);
+
   if (pathname.includes("/admin")) return null;
   return (
-    <nav className="flex items-center justify-between px-10 py-6">
+    <nav
+      className={`sticky top-0 z-10 flex items-center justify-between bg-white px-10 py-6 transition duration-400 ${scrollDir === "down" ? "-translate-y-full" : "translate-y-0"}`}
+    >
       <div className="flex items-center gap-10">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/ikean.png" width={100} height={100} alt="logo-IKean" />
