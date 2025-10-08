@@ -76,7 +76,6 @@ export async function updateProduct({
   featureImage,
   imageList,
 }: PropCreateNewProduct) {
-  console.log(data);
   if (!data.title) {
     throw new Error("Title is required");
   }

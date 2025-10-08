@@ -35,7 +35,7 @@ function ShopByPrice() {
   ];
 
   return (
-    <div>
+    <div className="mt-15 -mb-20">
       <div className="my-12">
         <h2 className="mb-10 text-2xl">Shop by Price</h2>
         <CustomScrollSec>

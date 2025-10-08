@@ -15,8 +15,6 @@ export default function Page() {
     email: "",
   });
 
-  console.log(data);
-
   const handleData = (key: string, value: string) => {
     setData({
       ...data,

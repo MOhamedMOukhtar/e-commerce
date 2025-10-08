@@ -4,7 +4,7 @@ import IndicatorTooltip from "./IndicatorTooltip";
 
 function LowestPrices() {
   return (
-    <div className="my-20">
+    <div className="-mt-10">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="mb-8 text-2xl">Our Lowest Prices</h2>

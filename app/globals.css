@@ -219,43 +219,43 @@
 
 /*special offers*/
 .my-element div {
-  position: relative;
+  /* position: relative; */
   cursor: pointer;
 }
-.my-element :nth-child(1) {
+.my-element > :nth-child(1) {
   grid-column: 1/ 3 span;
 }
-.my-element :nth-child(2) {
+.my-element > :nth-child(2) {
   aspect-ratio: 1/1.35;
   grid-column: 4 / 3 span;
   grid-row: 1/ 2 span;
 }
-.my-element :nth-child(3) {
+.my-element > :nth-child(3) {
   aspect-ratio: 1/1.35;
   grid-column: 1 / 3 span;
   grid-row: 2/ 2 span;
 }
-.my-element :nth-child(4) {
+.my-element > :nth-child(4) {
   aspect-ratio: 1/1;
   grid-column: 4 / 3 span;
   grid-row: 3/ 1 span;
 }
-.my-element :nth-child(5) {
+.my-element > :nth-child(5) {
   aspect-ratio: 1/1;
   grid-column: 7 / 3 span;
   grid-row: 1/ 1 span;
 }
-.my-element :nth-child(6) {
+.my-element > :nth-child(6) {
   aspect-ratio: 1/1.35;
   grid-column: 10 / 3 span;
   grid-row: 1/ 2 span;
 }
-.my-element :nth-child(7) {
+.my-element > :nth-child(7) {
   aspect-ratio: 1/1.35;
   grid-column: 7 / 3 span;
   grid-row: 2/ 2 span;
 }
-.my-element :nth-child(8) {
+.my-element > :nth-child(8) {
   aspect-ratio: 1/1;
   grid-column: 10 / 3 span;
   grid-row: 3/ 1 span;
@@ -290,4 +290,22 @@
   aspect-ratio: 1/1;
   grid-column: 12 / 4 span;
   grid-row: 5/ 3 span;
+}
+
+/* Base style for progress */
+progress.progress {
+  @apply appearance-none overflow-hidden rounded bg-gray-200;
+}
+
+/* Chrome / Safari */
+progress.progress::-webkit-progress-bar {
+  @apply bg-gray-200;
+}
+progress.progress::-webkit-progress-value {
+  @apply bg-black;
+}
+
+/* Firefox */
+progress.progress::-moz-progress-bar {
+  @apply bg-black;
 }

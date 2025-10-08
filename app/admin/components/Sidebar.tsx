@@ -116,9 +116,6 @@ function Sections({ item }: { item: MenuItem }) {
   const pathName = usePathname();
   const isActive = pathName.startsWith(item.link);
 
-  console.log(pathName);
-  console.log(item.link);
-
   return (
     <Link href={item.link} key={item.name}>
       <li

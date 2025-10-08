@@ -28,6 +28,7 @@ type TData = {
   measurements: string;
   packaging: string;
   slug: string;
+  price: number;
 };
 
 function Page() {
@@ -41,6 +42,7 @@ function Page() {
     measurements: "",
     packaging: "",
     slug: "",
+    price: 0,
   });
 
   const [featureImage, setFeatureImage] = useState<File | null>(null);
@@ -106,6 +108,7 @@ function Page() {
         measurements: "",
         packaging: "",
         slug: "",
+        price: 0,
       });
       setFeatureImage(null);
       setImageList([]);
@@ -149,6 +152,7 @@ function Page() {
         measurements: "",
         packaging: "",
         slug: "",
+        price: 0,
       });
       setFeatureImage(null);
       setImageList([]);

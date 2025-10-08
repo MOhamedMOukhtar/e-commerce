@@ -4,8 +4,8 @@ import { getSpecialOffers } from "@/lib/firestore/special-offers/read_server";
 import { TProduct } from "@/types/product/product";
 import { useEffect, useState } from "react";
 import CustomScrollSec from "./CustomScrollSec";
-import ProductCard from "./ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import ProductCardSmall from "./ProductCardSmall";
 
 function ProductSpecialOffers() {
   const [products, setProducts] = useState<TProduct[]>([]);
@@ -14,7 +14,7 @@ function ProductSpecialOffers() {
   useEffect(() => {
     const fetchSpecialOffers = async () => {
       setLoading(true);
-      const specialOffers = (await getSpecialOffers()) as TProduct[];
+      const specialOffers = (await getSpecialOffers(14)) as TProduct[];
       setProducts(specialOffers);
       setLoading(false);
     };
@@ -45,7 +45,7 @@ function ProductSpecialOffers() {
     <div>
       <CustomScrollSec>
         {products.map((product) => {
-          return <ProductCard product={product} key={product.id} />;
+          return <ProductCardSmall product={product} key={product.id} />;
         })}
       </CustomScrollSec>
     </div>

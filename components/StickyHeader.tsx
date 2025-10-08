@@ -32,12 +32,10 @@ function StickyHeader() {
     return () => window.removeEventListener("scroll", updateScrollDir);
   }, []);
 
-  console.log(scrollDir);
-
   if (pathname.includes("/admin")) return null;
   return (
     <nav
-      className={`sticky top-0 z-10 flex items-center justify-between bg-white px-10 py-6 transition duration-400 ${scrollDir === "down" ? "-translate-y-full" : "translate-y-0"}`}
+      className={`sticky top-0 z-100 flex items-center justify-between bg-white px-10 py-6 transition duration-400 ${scrollDir === "down" ? "-translate-y-full" : "translate-y-0"}`}
     >
       <div className="flex items-center gap-10">
         <Link href="/" className="flex items-center gap-2">

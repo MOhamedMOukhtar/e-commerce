@@ -9,7 +9,7 @@ function SecTipsIdeas({
 }) {
   return (
     <section
-      className={`mb-[-17px] flex flex-col gap-5 transition-all duration-100 ease-out ${showSections ? "opacity-100" : "opacity-0"} ${display ? "block" : "hidden"} `}
+      className={`mb-[-15px] flex flex-col gap-5 transition-all duration-100 ease-out ${showSections ? "opacity-100" : "opacity-0"} ${display ? "block" : "hidden"} `}
       style={{
         maxHeight: showSections ? "120px" : "0px",
       }}

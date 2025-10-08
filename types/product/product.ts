@@ -5,6 +5,7 @@ export interface TProduct {
   slug: string;
   section?: string | number;
   subSection?: string | number;
+  subSubSection?: string | number;
   color?: string;
   stock?: number;
   price: number;

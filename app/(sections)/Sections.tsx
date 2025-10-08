@@ -13,12 +13,18 @@ function Sections() {
   const [exploreSubSection, setExploreSubSection] = useState<string>("");
   const [clickedItem, setClickedItem] = useState<string>("");
   const pathname = usePathname();
+
   const [showSections, startHover, endHover, hover, end, display] =
     useHoverTimeout(600);
 
   useEffect(() => {
     if (pathname === "/") {
       setSectionTitle("products");
+    }
+    if (pathname.endsWith("storage-organisation")) {
+      setSectionTitle("explore");
+      setExploreSubSection("eRbOdm13dExeeHUmUY78");
+      setClickedItem("eRbOdm13dExeeHUmUY78");
     }
   }, [pathname]);
 
@@ -29,16 +35,22 @@ function Sections() {
 
   if (pathname.includes("/admin")) return null;
 
+  console.log(clickedItem);
+
   return (
     <main
       className={`mx-12 space-y-7 ${showSections ? "min-h-[240px]" : "min-h-[70px]"} transition-[min-height] duration-200 ease-in-out`}
       onMouseEnter={() => {
-        startHover();
-        hover();
+        if (typeof startHover === "function" && typeof hover === "function") {
+          startHover();
+          hover();
+        }
       }}
       onMouseLeave={() => {
-        endHover();
-        end();
+        if (typeof endHover === "function" && typeof end === "function") {
+          endHover();
+          end();
+        }
       }}
     >
       <nav className="flex w-fit items-start justify-start gap-7 border-b border-gray-300 pt-4 text-base font-medium text-black/60">
@@ -117,7 +129,7 @@ function Sections() {
             exploreSubSection={exploreSubSection}
             setClickedItem={setClickedItem}
             clickedItem={clickedItem}
-            className={`${showSections ? "h-fit" : "h-0 overflow-hidden"} transition duration-200 ease-in-out`}
+            className={`${showSections ? "h-40" : "h-0 overflow-hidden"} transition duration-200 ease-in-out`}
           />
         )}
         {sectionTitle === "rooms" && (

@@ -6,9 +6,8 @@ import { useEffect, useState } from "react";
 import CustomScrollSec from "./CustomScrollSec";
 import { getAccessoriesOffers } from "@/lib/firestore/folder/accessoriesOffer";
 import { getFurnitureOffers } from "@/lib/firestore/folder/FurnitureOffers";
-import ProductCard from "./ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { set } from "zod";
+import ProductCardSmall from "./ProductCardSmall";
 
 // Use forwardRef to accept the ref from parent
 
@@ -28,11 +27,11 @@ function RecommendedAccessoriesFurniture() {
     };
     const fetchAccessoriesOffers = async () => {
       const accessories = (await getAccessoriesOffers()) as TProduct[];
-      setAccessories(accessories);
+      setAccessories(accessories.slice(0, 12));
     };
     const fetchFurnitureOffers = async () => {
       const furniture = (await getFurnitureOffers()) as TProduct[];
-      setFurniture(furniture);
+      setFurniture(furniture.slice(0, 12));
     };
 
     fetchRecommended();
@@ -91,7 +90,7 @@ function RecommendedAccessoriesFurniture() {
       </div>
       <CustomScrollSec>
         {product.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCardSmall key={product.id} product={product} />
         ))}
       </CustomScrollSec>
     </div>

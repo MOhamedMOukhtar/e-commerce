@@ -5,7 +5,7 @@ import { Heart } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
-export default function ProductCard({ product }: { product: TProduct }) {
+export default function ProductCardSmall({ product }: { product: TProduct }) {
   const [hover, setHover] = useState(false);
   return (
     <div className="my-6 min-w-46">

@@ -11,7 +11,7 @@ import { useProduct, useProducts } from "@/lib/firestore/products/read";
 import { useSectoins } from "@/lib/firestore/sections/read";
 import { useSubSections } from "@/lib/firestore/sub-sections/read";
 import { TProduct } from "@/types/product/product";
-import { TSections } from "@/types/sections";
+import { TSections } from "@/types/sections/sections";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -19,9 +19,13 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type TData = {
+  id?: string;
+  imageURL?: string;
   title: string;
   subTitle: string;
   products?: string[];
+  section?: string;
+  timestampCreate?: Date;
 };
 
 ////////////// FUNCTIONAL COMPONENT //////////////
@@ -46,14 +50,12 @@ function Form() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await getCollection(id as string);
+        const res = (await getCollection(id as string)) as TData;
         if (!res) {
           toast.error("Category not found");
         } else {
-          setData({
-            title: res.title ?? "",
-            subTitle: res.subTitle ?? "",
-          });
+          console.log(res);
+          setData({ ...res });
         }
       } catch (error) {
         if (error instanceof Error) {
@@ -107,7 +109,7 @@ function Form() {
       if (imageRef.current) {
         imageRef.current.value = "";
       }
-      router.push("/admin/categories");
+      router.push("/admin/collections");
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
@@ -142,6 +144,15 @@ function Form() {
               *
             </span>
           </label>
+          {data.imageURL && !image && (
+            <Image
+              src={data.imageURL}
+              alt="Category"
+              className="my-2 rounded-sm object-cover"
+              width={80}
+              height={80}
+            />
+          )}
           {image && (
             <Image
               src={URL.createObjectURL(image)}

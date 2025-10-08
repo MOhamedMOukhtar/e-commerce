@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
-import IndicatorTooltip from "./IndicatorTooltip";
+import { PopupInfo } from "./IndicatorPopup";
+import Link from "next/link";
 
 export default function SectionSpecialOffers() {
   return (
@@ -11,13 +11,17 @@ export default function SectionSpecialOffers() {
             Home rearrangements made easier with our special offers
           </p>
         </div>
-        <Button variant={"border"} className="rounded-full border">
+        <Link
+          href={`/cat/lower-price`}
+          className="text-primary rounded-full border-1 px-6 py-2 outline-1 outline-black hover:border-black hover:text-black/70"
+        >
           special offers
-        </Button>
+        </Link>
       </div>
-      <div className="my-element relative grid grid-cols-[repeat(12,minmax(0,1fr))] gap-5 text-center">
-        <IndicatorTooltip
-          image={
+
+      <div className="my-element grid grid-cols-[repeat(12,minmax(0,1fr))] gap-5 text-center">
+        <PopupInfo
+          img={
             "https://www.ikea.com/ext/ingkadam/m/360be94e3ce1d775/original/PH185818-crop002.jpg?f=xxs"
           }
           props={[
@@ -27,19 +31,22 @@ export default function SectionSpecialOffers() {
               className: "top-[44%] left-[30%]",
               name: "OLDERDALEN",
               summery: "Bedside table",
-              price: "10,995",
-              previousPrice: "13,995",
+              price: "10995",
+              previousPrice: "13995",
               id: "1rOoy80nPBOfytFMZENC",
             },
           ]}
         />
-        <IndicatorTooltip
-          image={
+
+        <PopupInfo
+          img={
             "https://www.ikea.com/images/special-offers-at-a-lower-price-00dc306506b23807d2fa122ca23fedc6.jpg?f=xxs"
           }
+          href={`/cat/lower-price`}
         />
-        <IndicatorTooltip
-          image={
+
+        <PopupInfo
+          img={
             "https://www.ikea.com/ext/ingkadam/m/5d9394c52c433e0a/original/PE793630.jpg?f=xxs"
           }
           props={[
@@ -58,15 +65,15 @@ export default function SectionSpecialOffers() {
               className: "top-[31%] left-[35%]",
               name: "SMÅSTAD",
               summery: "Desk",
-              price: "12,695",
-              previousPrice: "14,395",
-              show: true,
+              price: "12695",
+              previousPrice: "14395",
+              active: true,
               id: "bhAJ6j75VcNmFAoeqPGn",
             },
           ]}
         />
-        <IndicatorTooltip
-          image={
+        <PopupInfo
+          img={
             "https://www.ikea.com/ext/ingkadam/m/3e932dd5add0c4de/original/PE821733.JPG?f=xxs"
           }
           props={[
@@ -78,6 +85,7 @@ export default function SectionSpecialOffers() {
               summery: "Jar with lid",
               price: "249",
               id: "cqEh5rzSMSmTkb2SnxXh",
+              highlight: true,
             },
             {
               side: "top",
@@ -86,7 +94,7 @@ export default function SectionSpecialOffers() {
               name: "AVSTEG",
               summery: "Kitchen countertop organiser",
               price: "999",
-              previousPrice: "1,399",
+              previousPrice: "1399",
               id: "79NPiLBYVSyUizPB6dpb",
             },
             {
@@ -100,8 +108,8 @@ export default function SectionSpecialOffers() {
             },
           ]}
         />
-        <IndicatorTooltip
-          image={
+        <PopupInfo
+          img={
             "https://www.ikea.com/ext/ingkadam/m/535522ecec35c634/original/PH184732-crop002.jpg?f=xxs"
           }
           props={[
@@ -111,8 +119,8 @@ export default function SectionSpecialOffers() {
               className: "top-[58%] left-[20%]",
               name: "NORRARYD",
               summery: "Chair",
-              price: "5,995",
-              previousPrice: "7,495",
+              price: "5995",
+              previousPrice: "7495",
               id: "KUce4Fe3sQRXz7yuSz7e",
             },
             {
@@ -121,13 +129,13 @@ export default function SectionSpecialOffers() {
               className: "top-[43%] left-[40%]",
               name: "KLIMPFJÄLL",
               summery: "Dining table",
-              price: "45,995",
+              price: "45995",
               id: "xrOPXCJaZxeRlgcZt02U",
             },
           ]}
         />
-        <IndicatorTooltip
-          image={
+        <PopupInfo
+          img={
             "https://www.ikea.com/ext/ingkadam/m/27e2d24e7a2d56ec/original/PH186422.jpg?f=xxs"
           }
           props={[
@@ -137,14 +145,14 @@ export default function SectionSpecialOffers() {
               className: "top-[52%] left-[48%]",
               name: "KALKNÄS",
               summery: "Cabinet with sliding doors",
-              price: "8,995",
-              previousPrice: "11,495",
+              price: "8995",
+              previousPrice: "11495",
               id: "nlJb7sASlKVIc0yNKzez",
             },
           ]}
         />
-        <IndicatorTooltip
-          image="https://www.ikea.com/ext/ingkadam/m/120eea3248b38687/original/PE856970.jpg?f=xxs"
+        <PopupInfo
+          img="https://www.ikea.com/ext/ingkadam/m/120eea3248b38687/original/PE856970.jpg?f=xxs"
           props={[
             {
               side: "right",
@@ -152,9 +160,9 @@ export default function SectionSpecialOffers() {
               className: "top-[50%] left-[20%]",
               name: "VINGSÖN",
               summery: "Wing chair, in/outdoor",
-              price: "17,995",
-              previousPrice: "22,995",
-              show: true,
+              price: "17995",
+              previousPrice: "22995",
+              active: true,
               id: "e40LsXNXxOy2YqlJRqJA",
             },
             {
@@ -163,14 +171,14 @@ export default function SectionSpecialOffers() {
               className: "top-[72%] left-[20%]",
               name: "JÄRPÖN/DUVHOLMEN",
               summery: "Seat cushion, outdoor",
-              price: "3,200",
-              previousPrice: "3,700",
+              price: "3200",
+              previousPrice: "3700",
               id: "OgDT0iQUzDYje6sAzcQI",
             },
           ]}
         />
-        <IndicatorTooltip
-          image={
+        <PopupInfo
+          img={
             "https://www.ikea.com/ext/ingkadam/m/3154facaae9b050e/original/PE945467.jpg?f=xxs"
           }
           props={[
@@ -182,7 +190,6 @@ export default function SectionSpecialOffers() {
               summery: "Scented candle in ceramic jar",
               price: "319",
               previousPrice: "399",
-              show: false,
               id: "87FDKF3qYPhFnnjMnLgM",
             },
           ]}

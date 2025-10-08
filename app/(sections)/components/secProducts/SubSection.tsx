@@ -72,7 +72,9 @@ export default function SubSection({
         alt={item.title}
         className="h-20 w-20 object-cover"
       />
-      <span className="text-[#666666] hover:text-[#131313]">{item.title}</span>
+      <span className="font-[400] text-[#666666] blur-[0.2px] hover:text-[#131313]">
+        {item.title}
+      </span>
 
       {/* Popup */}
       {isActive && !isLoading && (

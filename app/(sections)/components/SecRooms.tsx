@@ -31,7 +31,7 @@ function SecRooms({
 }) {
   return (
     <section
-      className={`content mb-[-37px] overflow-x-auto pb-5 transition-all duration-100 ease-out ${showSections ? "opacity-100" : "opacity-0"} ${display ? "block" : "hidden"}`}
+      className={`content mb-[-35px] overflow-x-auto pb-5 transition-all duration-100 ease-out ${showSections ? "opacity-100" : "opacity-0"} ${display ? "block" : "hidden"}`}
       id="custom-scrollbars-content"
       style={{
         maxHeight: showSections ? "120px" : "0px",

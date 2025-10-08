@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 import { TSubSubSection } from "@/types/sub-subsection/subSubSection";
+import { TSubSection } from "@/types/subSection/subSection";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface CustomScrollProps {
@@ -15,7 +17,7 @@ interface CustomScrollProps {
   showArrowRight: boolean;
   contentRef?: React.RefObject<HTMLDivElement | null>;
   subSubSections?: TSubSubSection[];
-  fromParent?: boolean;
+  subSection?: TSubSection[];
   arrowPosition?: string;
 }
 
@@ -30,11 +32,12 @@ function CustomScroll({
   showArrowLeft,
   showArrowRight,
   contentRef,
+  subSection,
   subSubSections,
-  fromParent = false,
   arrowPosition = "-top-28",
 }: CustomScrollProps) {
   const [showScrollbar, setShowScrollbar] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (contentRef?.current) {
@@ -44,9 +47,9 @@ function CustomScroll({
     } else {
       setShowScrollbar(false);
     }
-  }, [subSubSections, contentRef]);
+  }, [subSubSections, contentRef, subSection]);
 
-  if (!showScrollbar && !fromParent) return null;
+  if (pathname !== "/" && !showScrollbar) return null;
 
   return (
     <div className="scrollbar relative">

@@ -15,7 +15,7 @@ import {
 } from "@/lib/firestore/sub-subsection/write";
 import { TSubSubSection } from "@/types/sub-subsection/subSubSection";
 import { getSubSubSection } from "@/lib/firestore/sub-subsection/read_server";
-import { TSections } from "@/types/section.ts/sections";
+import { TSections } from "@/types/sections/sections";
 
 ////////////// FUNCTIONAL COMPONENT //////////////
 function Form() {

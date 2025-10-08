@@ -18,7 +18,7 @@ const items = [
 
 function IKEANFood() {
   return (
-    <div className="my-20 space-y-8">
+    <div className="-mt-20 mb-15 space-y-8">
       <div>
         <h2 className="text-2xl">IKEAN Food</h2>
       </div>

@@ -1,7 +1,10 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { getProduct } from "@/lib/firestore/products/read_server";
+import {
+  getCommonProducts,
+  getProduct,
+} from "@/lib/firestore/products/read_server";
 import { formatEGP } from "@/lib/helper/formatMoney";
 import { TProduct } from "@/types/product/product";
 import {
@@ -24,20 +27,30 @@ function Product() {
   const [showInfo, setShowInfo] = useState(false);
   const [showArrow, setShowArrow] = useState(false);
   const [product, setProduct] = useState<TProduct | null>(null);
+  const [mainProduct, setMainProduct] = useState<TProduct | null>(null);
+  const [commonProduct, setCommonProduct] = useState<TProduct[] | null>(null);
+  const [hoverProduct, setHoverProduct] = useState<TProduct | null>(null);
   const [activeImage, setActiveImage] = useState<File | null | undefined>(null);
   const [detMeas, setDetMeas] = useState<"details" | "measurements">("details");
   const [showGoodToKnow, setShowGoodToKnow] = useState(false);
   const [showMaterialsAndCare, setShowMaterialsAndCare] = useState(false);
+  const [packagingShow, setPackagingShow] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const pathname = usePathname();
   const id = pathname.split("-").at(-1) ?? null;
 
-  let productDetails = product?.details || "";
-  const goodToKnow = product?.goodToKnow || "";
-  let materialsAndCare = product?.materialsAndCare || "";
-  let measurements = product?.measurements || "";
-  let packaging = product?.packaging || "";
+  let productDetails = mainProduct?.details || "";
+  const goodToKnow = mainProduct?.goodToKnow || "";
+  let materialsAndCare = mainProduct?.materialsAndCare || "";
+  let measurements = mainProduct?.measurements || "";
+  let packaging = mainProduct?.packaging || "";
+
+  useEffect(() => {
+    if (product && !measurements) {
+      setPackagingShow(true);
+    }
+  }, [measurements, showInfo, product]);
 
   productDetails = productDetails.replace(
     /<p><strong>Designer<\/strong><\/p>/,
@@ -88,12 +101,35 @@ function Product() {
       setLoading(true);
       const product = (await getProduct({ id })) as TProduct;
       setProduct(product);
+      setMainProduct(product);
       setActiveImage(product?.featureImage);
       setLoading(false);
     }
 
     fetchProduct();
   }, [id]);
+
+  // fetch common product
+  useEffect(() => {
+    async function fetchCommonProduct() {
+      const products = (await getCommonProducts(
+        product?.commonID || "",
+      )) as TProduct[];
+      setCommonProduct(products);
+    }
+
+    if (product?.commonID) {
+      fetchCommonProduct();
+    }
+
+    if (commonProduct) {
+      commonProduct.map((p) => {
+        if (p.description) {
+          setMainProduct(p);
+        }
+      });
+    }
+  }, [product, commonProduct]);
 
   // scroll to top when component mount
   useEffect(() => {
@@ -152,7 +188,7 @@ function Product() {
 
   if (loading)
     return (
-      <div className="relative mx-12 mt-10">
+      <div className="relative mx-12 mt-6">
         <div className="mb-15 flex gap-12">
           <div className="flex max-w-6/10 flex-col gap-6">
             <div className="flex gap-12">
@@ -262,7 +298,7 @@ function Product() {
   if (!product) return null;
 
   return (
-    <div className="relative mx-12 mt-10">
+    <div className="relative mx-12 mt-6">
       <div className="mb-15 flex gap-12">
         <div className="flex max-w-6/10 flex-col gap-6">
           <div className="flex gap-12">
@@ -325,9 +361,7 @@ function Product() {
             </div>
             <div>
               <Image
-                src={
-                  typeof activeImage === "string" ? activeImage : "/ikean.png"
-                }
+                src={hoverProduct?.featureImage || activeImage}
                 width={1000}
                 height={1000}
                 alt="featureImage"
@@ -337,7 +371,7 @@ function Product() {
           </div>
           <div className="my-10 max-w-[85%] text-xl blur-[0.3px]">
             <div className="border-b pb-12 text-black/70">
-              {product.description}
+              {mainProduct?.description}
             </div>
             <div
               className="relative cursor-pointer border-b py-9 text-2xl font-bold hover:underline"
@@ -384,12 +418,52 @@ function Product() {
               ? formatEGP(product.salePrice)
               : formatEGP(product?.price ?? 0)}
           </div>
-          {product.salePrice && (
+          {product?.salePrice && (
             <div className="border-b pb-7 text-xs font-semibold text-black/50">
               Previous price: EGP {formatEGP(product?.price ?? 0)}
             </div>
           )}
-          <div className="">
+          {commonProduct && (
+            <>
+              <div className="mt-6 mb-3 font-semibold">Choose colour</div>
+              <div className="mb-1">
+                {hoverProduct ? hoverProduct.color : product.color}
+              </div>
+            </>
+          )}
+          <div className="flex gap-1">
+            {commonProduct &&
+              commonProduct.map((p) => {
+                return (
+                  <div
+                    key={p.id}
+                    className={`cursor-pointer rounded border-2 p-1 ${p.id === product.id ? "border-black/50" : "border-transparent hover:border-black/20"}`}
+                    onMouseEnter={() => {
+                      if (p.id === product.id) return;
+                      setHoverProduct(p);
+                    }}
+                    onMouseLeave={() => setHoverProduct(null)}
+                    onClick={() => {
+                      setProduct(p);
+                      setActiveImage(p.featureImage);
+                    }}
+                  >
+                    <Image
+                      src={
+                        typeof p.featureImage === "string"
+                          ? p.featureImage
+                          : "ikean-logo.png"
+                      }
+                      width={40}
+                      height={40}
+                      alt="icon"
+                    />
+                  </div>
+                );
+              })}
+          </div>
+
+          <div>
             <span className="mt-6 mb-2 inline-block text-sm font-bold">
               How to get it
             </span>
@@ -555,39 +629,43 @@ function Product() {
             <div className="text-stone-700">
               <div>
                 <h2 className="pb-6 text-[21px]">Measurements</h2>
-                <div
-                  dangerouslySetInnerHTML={{ __html: measurements || "" }}
-                  className="space-y-5 text-sm"
-                />
-                <Image
-                  src={
-                    typeof product.measurementImage === "string"
-                      ? product.measurementImage
-                      : "/ikean.png"
-                  }
-                  width={400}
-                  height={400}
-                  alt={product.title}
-                  className="border-b pb-10"
-                />
+                {measurements && (
+                  <>
+                    <div
+                      dangerouslySetInnerHTML={{ __html: measurements || "" }}
+                      className="space-y-5 text-sm"
+                    />
+                    <Image
+                      src={
+                        typeof mainProduct?.measurementImage === "string"
+                          ? mainProduct?.measurementImage
+                          : "/ikean.png"
+                      }
+                      width={400}
+                      height={400}
+                      alt={product?.title || "Product"}
+                      className="border-b pb-10"
+                    />
+                  </>
+                )}
               </div>
               <div>
                 <div
                   className="relative cursor-pointer overflow-hidden py-8 hover:underline"
-                  onClick={() => setShowGoodToKnow(!showGoodToKnow)}
+                  onClick={() => setPackagingShow(!packagingShow)}
                 >
                   <h2 className="text-[15px] font-bold">Packaging</h2>
                   <button className="absolute top-1/2 right-0 -translate-y-1/2 cursor-pointer">
                     <ChevronDownIcon
                       strokeWidth={2.5}
                       size={20}
-                      className={`${showGoodToKnow ? "rotate-180" : ""} transition duration-200`}
+                      className={`${packagingShow ? "rotate-180" : ""} transition duration-200`}
                     />
                   </button>
                 </div>
                 <div
                   className={`overflow-hidden text-sm transition-all duration-200 ${
-                    showGoodToKnow ? "max-h-fit pt-2 pb-10" : "max-h-0 pt-2"
+                    packagingShow ? "max-h-fit pt-2 pb-10" : "max-h-0 pt-2"
                   }`}
                 >
                   <div dangerouslySetInnerHTML={{ __html: packaging || "" }} />

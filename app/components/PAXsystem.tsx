@@ -27,7 +27,7 @@ function PAXsystem() {
   };
 
   return (
-    <div className="my-20 flex flex-col xl:flex-row">
+    <div className="-mt-20 mb-15 flex flex-col xl:flex-row">
       <div className="relative basis-[66%]">
         <video
           ref={videoRef}

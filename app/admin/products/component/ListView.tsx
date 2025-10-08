@@ -8,6 +8,7 @@ import { showConfirmToast } from "@/lib/helper/confirmToast";
 import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 import { Edit2, Trash2 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -25,7 +26,7 @@ interface TItem {
 }
 
 ////////////// FUNCTIONAL COMPONENT //////////////
-function ListView() {
+function ListView({ filter }: { filter: string }) {
   const [pageLimit, setPageLimit] = useState<number>(100);
   const [lastSnapDocList, setLastSnapDocList] = useState<
     QueryDocumentSnapshot<DocumentData>[]
@@ -43,6 +44,7 @@ function ListView() {
     error,
     lastSnapDoc,
   } = useProducts({
+    subSection: filter,
     pageLimit,
     lastSnapDoc:
       lastSnapDocList?.length === 0
@@ -165,14 +167,12 @@ function ListView() {
                 </td>
                 <td className="rounded-r-lg border-y border-r px-3 py-2">
                   <div className="flex items-center justify-center gap-2">
-                    <Button
-                      size={"sm"}
-                      disabled={isDeleting}
-                      variant={"outline"}
-                      onClick={() => handleUpdate(item?.id)}
+                    <Link
+                      href={`/admin/products/create?id=${item?.id}`}
+                      className="rounded-[8px] border-2 border-black/30 px-[11px] py-[6px] transition-[border] duration-150 hover:border-black/60"
                     >
-                      <Edit2 size={13} />
-                    </Button>
+                      <Edit2 size={16} />
+                    </Link>
                     <Button
                       size={"sm"}
                       disabled={isDeleting}

@@ -8,6 +8,7 @@ import {
   onSnapshot,
   query,
   startAfter,
+  where,
 } from "firebase/firestore";
 import useSWRSubscription from "swr/subscription";
 import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
@@ -15,18 +16,32 @@ import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 type PropsUseProducts = {
   pageLimit: number;
   lastSnapDoc: QueryDocumentSnapshot<DocumentData> | null;
+  subSection?: string;
 };
 
-export function useProducts({ pageLimit, lastSnapDoc }: PropsUseProducts) {
+export function useProducts({
+  pageLimit,
+  lastSnapDoc,
+  subSection,
+}: PropsUseProducts) {
   const { data, error } = useSWRSubscription(
-    ["products", pageLimit, lastSnapDoc],
-    ([path, pageLimit, lastSnapDoc], { next }) => {
+    ["products", pageLimit, lastSnapDoc, subSection],
+    ([path, pageLimit, lastSnapDoc, subSection], { next }) => {
       const ref = collection(db, path);
-      let q = query(ref, limit(pageLimit ?? 10));
+
+      const constraints: import("firebase/firestore").QueryConstraint[] = [];
+
+      if (subSection && subSection !== "all") {
+        constraints.push(where("subSection", "==", subSection));
+      }
 
       if (lastSnapDoc) {
-        q = query(q, startAfter(lastSnapDoc));
+        constraints.push(startAfter(lastSnapDoc));
       }
+
+      constraints.push(limit(pageLimit ?? 10));
+
+      const q = query(ref, ...constraints);
 
       const unsub = onSnapshot(
         q,
@@ -43,9 +58,11 @@ export function useProducts({ pageLimit, lastSnapDoc }: PropsUseProducts) {
           }),
         (err) => next(err, null),
       );
+
       return () => unsub();
     },
   );
+
   return {
     data: data?.list,
     lastSnapDoc: data?.lastSnapDoc,

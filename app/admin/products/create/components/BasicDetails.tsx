@@ -2,8 +2,10 @@ import { Input } from "@/components/ui/input";
 
 import { useSectoins } from "@/lib/firestore/sections/read";
 import { useSubSections } from "@/lib/firestore/sub-sections/read";
+import { useSubSubSections } from "@/lib/firestore/sub-subsection/read";
 
 import { TProduct } from "@/types/product/product";
+import { useState } from "react";
 
 interface PropsBasicDetails {
   data: TProduct;
@@ -18,8 +20,15 @@ type TSection = {
 };
 
 function BasicDetails({ data, handleData }: PropsBasicDetails) {
+  const [sectionId, setSectionId] = useState<string | undefined>(undefined);
+  const [subSectionId, setSubSectionId] = useState<string | undefined>(
+    undefined,
+  );
   const { data: sections } = useSectoins();
-  const { data: subSection } = useSubSections();
+  const { data: subSection } = useSubSections("order", "asc", sectionId);
+  const { data: sub_subSection } = useSubSubSections(sectionId, subSectionId);
+
+  console.log(sectionId);
 
   return (
     <section className="flex flex-1 flex-col gap-4 rounded-md border bg-white p-4">
@@ -88,7 +97,10 @@ function BasicDetails({ data, handleData }: PropsBasicDetails) {
           id="product-brand"
           name="product-brand"
           value={data.section ?? ""}
-          onChange={(e) => handleData("section", e.target.value)}
+          onChange={(e) => {
+            handleData("section", e.target.value);
+            setSectionId(e.target.value);
+          }}
           className="w-full cursor-pointer rounded-sm border px-4 py-2 text-sm! outline-none"
         >
           <option value="">Select Section</option>
@@ -107,7 +119,10 @@ function BasicDetails({ data, handleData }: PropsBasicDetails) {
           id="product-brand"
           name="product-brand"
           value={data.subSection ?? ""}
-          onChange={(e) => handleData("subSection", e.target.value)}
+          onChange={(e) => {
+            handleData("subSection", e.target.value);
+            setSubSectionId(e.target.value);
+          }}
           className="w-full cursor-pointer rounded-sm border px-4 py-2 text-sm! outline-none"
         >
           <option value="">Select Sub Section</option>
@@ -116,6 +131,27 @@ function BasicDetails({ data, handleData }: PropsBasicDetails) {
               {subSection.title}
             </option>
           ))}
+        </select>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-gray-500" htmlFor="product-brand">
+          Sub SubSection
+        </label>
+        <select
+          id="product-brand"
+          name="product-brand"
+          value={data.subSubSection ?? ""}
+          onChange={(e) => handleData("subSubSection", e.target.value)}
+          className="w-full cursor-pointer rounded-sm border px-4 py-2 text-sm! outline-none"
+        >
+          <option value="">Select Sub SubSection</option>
+          {sub_subSection?.map(
+            (subSubSection: { id: string; title: string }) => (
+              <option key={subSubSection.id} value={subSubSection.id}>
+                {subSubSection.title}
+              </option>
+            ),
+          )}
         </select>
       </div>
       <div className="flex flex-col gap-1">

@@ -2,8 +2,36 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import CustomScroll from "../(sections)/components/secProducts/CustomScroll";
+import { cn } from "@/lib/utils";
+import { TSubSubSection } from "@/types/sub-subsection/subSubSection";
 
-function CustomScrollSec({ children }: { children: React.ReactNode }) {
+function CustomScrollSec({
+  children,
+  popupRef,
+  fixJump = "",
+  className = "",
+  activeProductId,
+  setActiveProductId,
+  display = true,
+  showSections = true,
+  arrowPosition = "-top-60",
+  subSubSections,
+  clickedItem,
+  exploreSubSection,
+}: {
+  children: React.ReactNode;
+  popupRef?: React.RefObject<HTMLDivElement | null>;
+  fixJump?: string;
+  className?: string;
+  activeProductId?: string;
+  setActiveProductId?: React.Dispatch<React.SetStateAction<string>>;
+  display?: boolean | (() => void);
+  showSections?: boolean | (() => void);
+  arrowPosition?: string;
+  subSubSections?: TSubSubSection[];
+  clickedItem?: string;
+  exploreSubSection?: string;
+}) {
   const contentRef = useRef<HTMLDivElement>(null);
   const observer = useRef<ResizeObserver | null>(null);
   const scrollTrackRef = useRef<HTMLDivElement>(null);
@@ -85,7 +113,7 @@ function CustomScrollSec({ children }: { children: React.ReactNode }) {
         content.removeEventListener("scroll", handleThumbPosition);
       };
     }
-  }, [handleThumbPosition]);
+  }, [handleThumbPosition, contentRef, exploreSubSection, clickedItem]);
 
   function handleThumbMousedown(e: React.MouseEvent<HTMLDivElement>) {
     e.preventDefault();
@@ -177,9 +205,36 @@ function CustomScrollSec({ children }: { children: React.ReactNode }) {
       content.scrollBy({ left: scrollAmount, behavior: "smooth" });
     }
   }
+
+  useEffect(() => {
+    if (!popupRef) return;
+    if (!activeProductId) return;
+    if (!setActiveProductId) return;
+
+    const handler = (e: MouseEvent) => {
+      if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
+        setActiveProductId("");
+      }
+    };
+
+    if (activeProductId) {
+      document.addEventListener("mousedown", handler);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handler);
+    };
+  }, [activeProductId, popupRef, setActiveProductId]);
+
   return (
     <div
-      className="mb-10"
+      className={cn(
+        `${fixJump || "mb-100"} ${showSections ? "opacity-100" : "opacity-0"} ${display ? "block" : "hidden"}`,
+        className,
+      )}
+      style={{
+        maxHeight: showSections ? "120px" : "0px",
+      }}
       onMouseLeave={() => {
         setShowArrowLeft(false);
         setShowArrowRight(false);
@@ -197,6 +252,7 @@ function CustomScrollSec({ children }: { children: React.ReactNode }) {
       <div className="content flex gap-5 overflow-x-scroll" ref={contentRef}>
         {children}
       </div>
+
       <CustomScroll
         handleScrollButton={handleScrollButton}
         scrollTrackRef={scrollTrackRef}
@@ -206,8 +262,9 @@ function CustomScrollSec({ children }: { children: React.ReactNode }) {
         thumbWidth={thumbWidth}
         showArrowLeft={showArrowLeft}
         showArrowRight={showArrowRight}
-        fromParent={true}
-        arrowPosition="-top-60"
+        arrowPosition={arrowPosition}
+        contentRef={contentRef}
+        subSubSections={subSubSections}
       />
     </div>
   );

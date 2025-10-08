@@ -24,7 +24,7 @@ interface TTooltip {
   previousPrice?: string;
   show?: boolean;
   highlight?: boolean;
-  id: string;
+  id?: string;
 }
 
 export default function IndicatorTooltip({
@@ -50,6 +50,7 @@ export default function IndicatorTooltip({
 
   return (
     <div
+      className="relative"
       onMouseLeave={() => {
         setActiveTooltip(initialTooltip);
       }}
@@ -108,7 +109,7 @@ function TooltipComp({
         onMouseLeave={onDeactivate}
         onClick={(e) => {
           e.stopPropagation();
-          handlePush(item.id);
+          handlePush(item.id || "");
         }}
       >
         <Indicator isActive={isActive} />
@@ -120,11 +121,12 @@ function TooltipComp({
         hideArrow={true}
         sideOffset={0}
         avoidCollisions={false}
+        collisionPadding={8}
         side={item.side}
         align={item.align}
         onClick={(e) => {
           e.stopPropagation();
-          handlePush(item.id);
+          handlePush(item.id || "");
         }}
       >
         <div className="max-w-38 space-y-1 border-r p-4">

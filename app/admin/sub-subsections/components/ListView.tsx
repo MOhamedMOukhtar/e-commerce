@@ -10,7 +10,7 @@ import { getSubSection } from "@/lib/firestore/sub-sections/read_server";
 import { useSubSubSections } from "@/lib/firestore/sub-subsection/read";
 import { deleteSubSubSection } from "@/lib/firestore/sub-subsection/write";
 import { showConfirmToast } from "@/lib/helper/confirmToast";
-import { TSections } from "@/types/section.ts/sections";
+import { TSections } from "@/types/sections/sections";
 import { TSubSection } from "@/types/subSection/subSection";
 import { ChevronDown, Edit2, Trash2 } from "lucide-react";
 import Image from "next/image";

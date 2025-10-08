@@ -47,7 +47,7 @@ export async function updateCollection({ data, image }: TCategory) {
   if (!data.title) {
     throw new Error("title is required");
   }
-  if (!data.slug) {
+  if (!data.subTitle) {
     throw new Error("Sub Title is required");
   }
   if (!data.id) {

@@ -1,7 +1,7 @@
 import { TSubSubSection } from "@/types/sub-subsection/subSubSection";
 import { FloatingPortal } from "@floating-ui/react";
-import { useRouter } from "next/navigation";
-import { Dispatch, SetStateAction } from "react";
+import Link from "next/link";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 interface PopupProps {
   popupRef: React.RefObject<HTMLDivElement | null>;
@@ -24,10 +24,16 @@ function Popup({
   setSectionTitle,
   handleExplore,
 }: PopupProps) {
-  const router = useRouter();
+  const [slug, setSlug] = useState(item.slug);
+
   const handlePopupClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
+
+  useEffect(() => {
+    if (item.slug === "special-offers") setSlug("lower-price");
+  }, [item.slug]);
+
   return (
     <FloatingPortal>
       <div ref={popupRef}>
@@ -37,21 +43,35 @@ function Popup({
           onClick={handlePopupClick}
           className="min-w-80 rounded-2xl border border-black/30 bg-white p-[24px_48px_24px_24px] shadow-lg"
         >
-          <p
-            className="cursor-pointer font-semibold hover:underline"
+          <Link
+            href={`/cat/${slug}`}
+            className="block cursor-pointer font-semibold hover:underline"
             style={{
               paddingBlock: subSubSection.length === 0 ? "0" : "16px",
             }}
             onClick={(e) => {
               e.stopPropagation();
               handleClick();
-              router.push(`/cat/${item.slug}`);
-              setSectionTitle(`explore`);
+              if (subSubSection.length > 0) setSectionTitle(`explore`);
               if (item.id) handleExplore(item.id, item.id);
             }}
           >
             Explore {item.title}
-          </p>
+          </Link>
+          {subSubSection.length === 0 && (
+            <Link
+              href={`/cat/${slug}`}
+              className="mt-3 block cursor-pointer text-[15px] text-[#444444] hover:underline"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClick();
+                if (subSubSection.length > 0) setSectionTitle(`explore`);
+                if (item.id) handleExplore(item.id, item.id);
+              }}
+            >
+              {item.title}
+            </Link>
+          )}
           <ul
             className={`underline-pointer space-y-4`}
             style={{
@@ -68,7 +88,7 @@ function Popup({
                   if (item.id && sub.id) handleExplore(item.id, sub.id);
                 }}
               >
-                {sub.title}
+                <Link href={`/cat/${sub.slug}`}>{sub.title}</Link>
               </li>
             ))}
           </ul>

@@ -70,8 +70,7 @@ function SignIn() {
     setIsLoading(true);
     try {
       const credential = await signInWithPopup(auth, new GoogleAuthProvider());
-      console.log(credential);
-      console.log(credential.user);
+
       await createUser({
         uid: credential.user?.uid,
         displayName: credential.user?.displayName,
