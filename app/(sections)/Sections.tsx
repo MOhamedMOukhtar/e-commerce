@@ -35,6 +35,7 @@ function Sections() {
 
   if (pathname.includes("/admin")) return null;
 
+  console.log(exploreSubSection);
   console.log(clickedItem);
 
   return (

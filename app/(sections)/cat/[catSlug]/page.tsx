@@ -22,7 +22,13 @@ import KitchenwareTablewareOnOffers from "../components/KitchenwareTablewareOnOf
 import SofasArmchairs from "../components/SofasArmchairs";
 import SofasArmchairsOnOffers from "../components/SofasArmchairsOnOffers";
 import Under2000 from "../components/Under2000";
-import StorageOrganisation from "../components/StorageOrganisation";
+import StorageOrganisation from "../storage-organisation/page";
+import StorageSolutionSystems from "../components/StorageSolutionSystems";
+import CabinetsCupboards from "../components/CabinetsCupboards";
+import TvMediaFurniture from "../components/TvMediaFurniture";
+import ChestsOfDrawersDrawerUnits from "../components/ChestsOfDrawersDrawerUnits";
+import Wardrobes from "../components/Wardrobes";
+import GarageStorage from "../components/GarageStorage";
 
 function Page() {
   const params = useParams();
@@ -52,6 +58,13 @@ function Page() {
     return <SofasArmchairsOnOffers />;
   if (slug === "under-2000-egp-on-offer") return <Under2000 />;
   if (slug === "storage-organisation") return <StorageOrganisation />;
+  if (slug === "storage-solution-systems") return <StorageSolutionSystems />;
+  if (slug === "cabinets-cupboards") return <CabinetsCupboards />;
+  if (slug === "tv-media-furniture") return <TvMediaFurniture />;
+  if (slug === "chests-of-drawers-drawer-units")
+    return <ChestsOfDrawersDrawerUnits />;
+  if (slug === "wardrobes") return <Wardrobes />;
+  if (slug === "garage-storage") return <GarageStorage />;
 }
 
 export default Page;

@@ -11,6 +11,7 @@ import { getSubSection } from "@/lib/firestore/sub-sections/read_server";
 import { cn } from "@/lib/utils";
 import CustomScrollSec from "@/app/components/CustomScrollSec";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 function ExploreStorageFurniture({
   setSectionTitle,
@@ -160,14 +161,14 @@ function ExploreStorageFurniture({
           {subSubSections
             .filter((item) => item.id !== clickedItem)
             .map((item) => (
-              <div
+              <Link
+                href={`/cat/${item.slug}`}
                 key={item.id}
                 className="relative flex min-w-30 cursor-pointer flex-col items-center gap-3 text-center text-sm text-[#666666] hover:text-[#131313] hover:underline"
                 onClick={() => {
                   if (item.id) {
                     setClickedItem(item.id);
                   }
-                  router.push(`/cat/${item.slug}`);
                 }}
               >
                 <Image
@@ -182,7 +183,7 @@ function ExploreStorageFurniture({
                   className="h-20 w-20 object-cover"
                 />
                 <span className="">{item.title}</span>
-              </div>
+              </Link>
             ))}
         </div>
       </CustomScrollSec>

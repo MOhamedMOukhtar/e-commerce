@@ -1,4 +1,10 @@
-import React from "react";
+import FindPerfectStorage from "./components/FindPerfectStorage";
+import LivingRoom from "./components/LivingRoom";
+import ShelvingUnits from "./components/ShelvingUnits";
+import Storage from "./components/Storage";
+import StorageSections from "./components/StorageSections";
+import TailorMadeStorage from "./components/TailorMadeStorage";
+import TipsAndIdeas from "./components/TipsAndIdeas";
 
 function StorageOrganisation() {
   return (
@@ -16,7 +22,7 @@ function StorageOrganisation() {
       <h2 className="mt-12 mb-4 text-2xl font-bold">
         Tackle the mess, stress less!
       </h2>
-      <p className="mb-30 max-w-60/100 text-sm leading-5 text-[#484848]">
+      <p className="mb-10 max-w-60/100 text-sm leading-5 text-[#484848]">
         Take control of the clutter in your teen`s room with small storage
         solutions that make it easy to find everything. Attach a SKÅDIS pegboard
         to the bed for easy access to daily essentials, and use a FJÄDERHARV
@@ -24,6 +30,13 @@ function StorageOrganisation() {
         Need a flexible organiser? The STACKSTOD desk organiser is perfect for
         everything from makeup to study supplies, just grab it and go!
       </p>
+      <Storage />
+      <ShelvingUnits />
+      <TipsAndIdeas />
+      <FindPerfectStorage />
+      <TailorMadeStorage />
+      <LivingRoom />
+      <StorageSections />
     </div>
   );
 }

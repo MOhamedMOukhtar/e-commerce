@@ -1,6 +1,5 @@
 import Image from "next/image";
 import CustomScrollSec from "./CustomScrollSec";
-import React from "react";
 
 function ShopByPrice() {
   const sections = [
