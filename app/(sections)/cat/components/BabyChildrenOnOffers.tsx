@@ -20,8 +20,6 @@ function BabyChildrenOnOffers() {
     fetch();
   }, []);
 
-  console.log(products.length);
-
   useEffect(() => {
     products.forEach((product) => {
       if (product.commonID && !product.description) {

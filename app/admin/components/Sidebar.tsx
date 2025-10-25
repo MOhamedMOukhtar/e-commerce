@@ -7,7 +7,6 @@ import {
   Star,
   User,
   PackageOpen,
-  Cat,
   LogOut,
   ShieldCheck,
   TableOfContents,

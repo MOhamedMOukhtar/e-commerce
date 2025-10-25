@@ -7,12 +7,16 @@ import SecOffersCampaigns from "./components/SecOffersCampaigns";
 import Products from "./components/secProducts/Products";
 import ExploreSubSection from "./components/secProducts/components/ExploreSubSection";
 import { usePathname } from "next/navigation";
+import { getSubSubSectionBySlug } from "@/lib/firestore/sub-subsection/read_server";
 
 function Sections() {
-  const [sectionTitle, setSectionTitle] = useState<string | null>("products");
+  const [sectionTitle, setSectionTitle] = useState<string | null>("");
   const [exploreSubSection, setExploreSubSection] = useState<string>("");
   const [clickedItem, setClickedItem] = useState<string>("");
   const pathname = usePathname();
+
+  console.log(pathname.split("/").at(-1));
+  console.log("nader");
 
   const [showSections, startHover, endHover, hover, end, display] =
     useHoverTimeout(600);
@@ -28,15 +32,26 @@ function Sections() {
     }
   }, [pathname]);
 
+  useEffect(() => {
+    async function fetch() {
+      const subSubSection = await getSubSubSectionBySlug(
+        pathname.split("/").at(-1) as string,
+      );
+      if (subSubSection) {
+        setSectionTitle("explore");
+        setExploreSubSection(subSubSection.subSection as string);
+        setClickedItem(subSubSection.id as string);
+      }
+    }
+    fetch();
+  }, [pathname]);
+
   function handleExplore(subsection: string, item: string) {
     setExploreSubSection(subsection);
     setClickedItem(item);
   }
 
   if (pathname.includes("/admin")) return null;
-
-  console.log(exploreSubSection);
-  console.log(clickedItem);
 
   return (
     <main

@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { z } from "zod";
-import { PulseLoader } from "react-spinners";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,79 +82,89 @@ function SignIn() {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="m-20 flex w-1/3 flex-col gap-4"
-    >
-      <h1 className="text-1xl mb-4 font-bold">
-        Log in or join IKEAN today to benefit from a more personalized
-        experience
-      </h1>
-      <div>
-        <label
-          htmlFor="email"
-          className="text-muted-foreground text-md font-normal"
-        >
-          Email
-        </label>
-        <Input
-          {...register("email")}
-          id="email"
-          type="email"
-          className="py-5"
-        />
-        {errors.email && (
-          <p className="text-sm text-red-600">{errors.email.message}</p>
-        )}
+    <div className="mx-12 my-20 flex justify-around">
+      <div className="w-3/10 space-y-5">
+        <h1 className="">Log in to your account</h1>
+        <p className="text-muted-foreground text-start">
+          Get a more personalised experience where you don`t need to fill in
+          your information every time
+        </p>
       </div>
-      <div>
-        <label
-          htmlFor="password"
-          className="text-muted-foreground text-md font-normal"
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex w-4/10 flex-col gap-4"
+      >
+        <h1 className="mb-4 w-8/10 text-lg font-bold">
+          Log in or join IKEAN today to benefit from a more personalized
+          experience
+        </h1>
+        <div>
+          <label
+            htmlFor="email"
+            className="text-muted-foreground text-md font-normal"
+          >
+            Email
+          </label>
+          <Input
+            {...register("email")}
+            id="email"
+            type="email"
+            className="py-5"
+          />
+          {errors.email && (
+            <p className="text-sm text-red-600">{errors.email.message}</p>
+          )}
+        </div>
+        <div>
+          <label
+            htmlFor="password"
+            className="text-muted-foreground text-md font-normal"
+          >
+            Password
+          </label>
+          <Input
+            {...register("password")}
+            id="password"
+            type="password"
+            className="py-5"
+          />
+          {errors.password && (
+            <p className="text-sm text-red-600">{errors.password.message}</p>
+          )}
+        </div>
+        <Link
+          href="/reset-password"
+          className="text-muted-foreground block underline"
         >
-          Password
-        </label>
-        <Input
-          {...register("password")}
-          id="password"
-          type="password"
-          className="py-5"
-        />
-        {errors.password && (
-          <p className="text-sm text-red-600">{errors.password.message}</p>
-        )}
-      </div>
-      <Link
-        href="/reset-password"
-        className="text-muted-foreground block underline"
-      >
-        Forgot your password?
-      </Link>
-      <Button
-        disabled={isSubmitting}
-        className="w-full cursor-pointer rounded-full p-5 disabled:bg-gray-950"
-      >
-        Log in
-      </Button>
-      <Button
-        onClick={handleLogin}
-        disabled={isLoading}
-        className="w-full cursor-pointer rounded-full p-5 disabled:bg-gray-950"
-      >
-        {/* <PulseLoader color="#fff" size={8} loading={true} className={``} /> */}
-        <FcGoogle size={25} />
-        <span>Sign in with Google</span>
-      </Button>
-      <p className="text-muted-foreground after:content-[' '] before:content-[' '] relative text-center text-sm before:absolute before:top-1/2 before:left-0 before:h-[1px] before:w-[38%] before:bg-black/30 after:absolute after:top-1/2 after:right-0 after:h-[1px] after:w-[38%] after:bg-black/30">
-        New at IKEAN?
-      </p>
-      <Button
-        variant={"border"}
-        className="w-full cursor-pointer rounded-full p-5"
-      >
-        <Link href={"/sign-up"}>Create account</Link>
-      </Button>
-    </form>
+          Forgot your password?
+        </Link>
+        <Button
+          disabled={isSubmitting}
+          className="w-full cursor-pointer rounded-full p-5 disabled:bg-gray-950"
+        >
+          Log in
+        </Button>
+        <Button
+          onClick={handleLogin}
+          disabled={isLoading}
+          className="w-full cursor-pointer rounded-full p-5 disabled:bg-gray-950"
+        >
+          {/* <PulseLoader color="#fff" size={8} loading={true} className={``} /> */}
+          <FcGoogle size={25} />
+          <span>Sign in with Google</span>
+        </Button>
+        <p className="text-muted-foreground after:content-[' '] before:content-[' '] relative text-center text-sm before:absolute before:top-1/2 before:left-0 before:h-[1px] before:w-[38%] before:bg-black/30 after:absolute after:top-1/2 after:right-0 after:h-[1px] after:w-[38%] after:bg-black/30">
+          New at IKEAN?
+        </p>
+        <Button
+          variant={"border"}
+          className="w-full cursor-pointer rounded-full p-5"
+          onClick={() => reset()}
+        >
+          <Link href={"/sign-up"}>Create account</Link>
+        </Button>
+      </form>
+    </div>
   );
 }
 

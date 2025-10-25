@@ -40,7 +40,6 @@ export default function RootLayout({
         <MainHeader />
         <StickyHeader />
         <Sections />
-
         {children}
         <Footer />
         <Toaster position="top-right" />

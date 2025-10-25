@@ -32,9 +32,6 @@ export async function getProducts() {
 export async function getProductsbySubSection(subSectionId: string) {
   const constraints: import("firebase/firestore").QueryConstraint[] = [];
 
-  console.log(subSectionId);
-  console.log("not null");
-
   if (subSectionId && subSectionId !== "all") {
     constraints.push(where("subSection", "==", subSectionId));
   }

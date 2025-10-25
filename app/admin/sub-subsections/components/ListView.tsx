@@ -12,7 +12,7 @@ import { deleteSubSubSection } from "@/lib/firestore/sub-subsection/write";
 import { showConfirmToast } from "@/lib/helper/confirmToast";
 import { TSections } from "@/types/sections/sections";
 import { TSubSection } from "@/types/subSection/subSection";
-import { ChevronDown, Edit2, Trash2 } from "lucide-react";
+import { Edit2, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -48,7 +48,7 @@ function ListView() {
     selectSection,
   );
   const router = useRouter();
-  console.log(subSubSection);
+
   if (isLoading)
     return (
       <div>

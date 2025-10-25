@@ -23,4 +23,6 @@ export interface TProduct {
   materialsAndCare?: string;
   measurements?: string;
   packaging?: string;
+  highlight?: boolean;
+  trending?: boolean;
 }

@@ -29,6 +29,31 @@ import TvMediaFurniture from "../components/TvMediaFurniture";
 import ChestsOfDrawersDrawerUnits from "../components/ChestsOfDrawersDrawerUnits";
 import Wardrobes from "../components/Wardrobes";
 import GarageStorage from "../components/GarageStorage";
+import SideboardsBuffetsConsoleTables from "../components/SideboardsBuffetsConsoleTables";
+import OutdoorStorage from "../components/OutdoorStorage";
+import Trolleys from "../components/Trolleys";
+import RoomDividres from "../components/RoomDividres";
+import HallwayFurnitureSets from "../components/HallwayFurnitureSets";
+import ToyStorage from "../components/ToyStorage";
+import StorageUnitsCabinets from "../components/StorageUnitsCabinets";
+import ShoeCabinets from "../components/ShoeCabinets";
+import DesksComputerDesks from "../components/DesksComputerDesks";
+import DeskChairs from "../components/DeskChairs";
+import GamingFurniture from "../components/GamingFurniture";
+import BekantConferenceMeetingTables from "../components/BekantConferenceMeetingTables";
+import ConferenceTableChairSets from "../components/ConferenceTableChairSets";
+import DeskChairSets from "../components/DeskChairSets";
+import ConferenceChairs from "../components/ConferenceChairs";
+import BedsMattresses from "../components/BedsMattresses";
+import Lighting from "../components/Lighting";
+import LaundryCleaning from "../components/LaundryCleaning";
+import BathroomProducts from "../components/BathroomProducts";
+import SmallStorageOrganisers from "../components/SmallStorageOrganisers";
+import AffordableEssentials from "../components/AffordableEssentials";
+import LowestPrice from "../components/LowestPrice";
+import LimitedEditions from "../components/LimitedEditions";
+import ValueForMoney from "../components/ValueForMoney";
+import TrendingSeason from "../components/TrendingSeason";
 
 function Page() {
   const params = useParams();
@@ -65,6 +90,34 @@ function Page() {
     return <ChestsOfDrawersDrawerUnits />;
   if (slug === "wardrobes") return <Wardrobes />;
   if (slug === "garage-storage") return <GarageStorage />;
+  if (slug === "sideboards-buffets-console-tables")
+    return <SideboardsBuffetsConsoleTables />;
+  if (slug === "outdoor-storage") return <OutdoorStorage />;
+  if (slug === "trolleys") return <Trolleys />;
+  if (slug === "room-dividers") return <RoomDividres />;
+  if (slug === "hallway-furniture-sets") return <HallwayFurnitureSets />;
+  if (slug === "toy-storage") return <ToyStorage />;
+  if (slug === "storage-units-cabinets") return <StorageUnitsCabinets />;
+  if (slug === "shoe-cabinets") return <ShoeCabinets />;
+  if (slug === "desks-computer-desks") return <DesksComputerDesks />;
+  if (slug === "desk-chairs") return <DeskChairs />;
+  if (slug === "gaming-furniture") return <GamingFurniture />;
+  if (slug === "bekant-conference-meeting-tables")
+    return <BekantConferenceMeetingTables />;
+  if (slug === "conference-table-chair-sets")
+    return <ConferenceTableChairSets />;
+  if (slug === "desk-chair-sets") return <DeskChairSets />;
+  if (slug === "conference-chairs") return <ConferenceChairs />;
+  if (slug === "beds-mattresses") return <BedsMattresses />;
+  if (slug === "lighting") return <Lighting />;
+  if (slug === "laundry-cleaning") return <LaundryCleaning />;
+  if (slug === "bathroom-products") return <BathroomProducts />;
+  if (slug === "small-storage-organisers") return <SmallStorageOrganisers />;
+  if (slug === "affordable-essentials") return <AffordableEssentials />;
+  if (slug === "lowest-price") return <LowestPrice />;
+  if (slug === "limited-editions") return <LimitedEditions />;
+  if (slug === "value-for-money") return <ValueForMoney />;
+  if (slug === "trending-season") return <TrendingSeason />;
 }
 
 export default Page;

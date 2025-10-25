@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React from "react";
 
 function SecOffersCampaigns({
@@ -18,8 +19,12 @@ function SecOffersCampaigns({
         <li className="font-medium text-black/80">
           See all in Offers & Campaigns
         </li>
-        <li>Trending this season</li>
-        <li>Campaigns</li>
+        <li>
+          <Link href={"/cat/trending-season"}>Trending this season</Link>
+        </li>
+        <li>
+          <Link href="/cat/lower-price">Special Offers</Link>
+        </li>
       </ul>
     </section>
   );

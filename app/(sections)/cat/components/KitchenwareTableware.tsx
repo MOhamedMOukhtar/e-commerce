@@ -90,7 +90,7 @@ function KitchenwareTableware() {
         />
       </div>
       <h2 className="mt-20 border-b pb-6 text-2xl" id="products">
-        Decoration Products
+        Kitchenware & tableware Products
       </h2>
       <div className="grid grid-cols-[repeat(4,minmax(0,1fr))] gap-x-10 overflow-hidden border-b border-[oklch(0.922_0_0)]">
         {visibleProducts.map((product) => (

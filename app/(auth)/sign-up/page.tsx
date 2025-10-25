@@ -100,14 +100,23 @@ export default function SignIn() {
   }
 
   return (
-    <>
+    <div className="mt-10 flex justify-around">
+      <div className="space-y-5">
+        <h1 className="text-4xl">Create an IKEAN account</h1>
+        <p className="text-muted-foreground text-start text-sm">
+          Already have an account?{" "}
+          <Link href="/login" className="underline">
+            Log in here
+          </Link>
+        </p>
+      </div>
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="mx-20 my-5 flex w-1/3 flex-col gap-5"
       >
-        <h1 className="text-1xl mb-4 font-bold">
+        <h1 className="mb-4 text-lg font-bold">
           From your profile, you will find all information connected to your
-          account. And it’s free to join!
+          account. And it`s free to join!
         </h1>
         <div>
           <label
@@ -263,14 +272,8 @@ export default function SignIn() {
         >
           Create account
         </Button>
-        <p className="text-muted-foreground text-center text-sm">
-          Already have an account?{" "}
-          <Link href="/login" className="underline">
-            Log in
-          </Link>
-        </p>
       </form>
-    </>
+    </div>
   );
 }
 

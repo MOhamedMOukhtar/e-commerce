@@ -23,7 +23,7 @@ function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
         <div className="flex items-center gap-4">
           <div className="flex flex-col items-end">
             <p className="text-md font-semibold text-black">{admin?.name}</p>
-            <p className="text-sm text-gray-500">{admin?.email}</p>
+            {/* <p className="text-sm text-gray-500">{admin?.email}</p> */}
           </div>
           <Image
             src={admin?.imageURL}

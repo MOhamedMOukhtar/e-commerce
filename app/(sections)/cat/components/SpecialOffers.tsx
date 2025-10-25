@@ -66,7 +66,9 @@ const sections = [
 
 function SpecialOffers() {
   const [products, setProducts] = useState<TProduct[]>([]);
-  const [visibleCount, setVisibleCount] = useState(16); // show first 6 only
+  const [visibleCount, setVisibleCount] = useState(16);
+  const [commonProducts, setCommonProducts] = useState<TProduct[]>([]);
+  const [filterProducts, setFilterProducts] = useState<TProduct[]>([]);
 
   useEffect(() => {
     const fetchSpecialOffers = async () => {
@@ -76,7 +78,23 @@ function SpecialOffers() {
     fetchSpecialOffers();
   }, []);
 
-  const visibleProducts = products.slice(0, visibleCount);
+  useEffect(() => {
+    products.forEach((product) => {
+      if (product.description) {
+        setFilterProducts((prev) => [...prev, product]);
+      }
+      if (product.commonID && !product.description) {
+        setCommonProducts((prev) => {
+          // check if product already exists in the list
+          const exists = prev.some((p) => p.id === product.id);
+          if (exists) return prev;
+          return [...prev, product];
+        });
+      }
+    });
+  }, [products]);
+
+  const visibleProducts = filterProducts.slice(0, visibleCount);
 
   return (
     <div className="mx-12 my-20">
@@ -126,20 +144,24 @@ function SpecialOffers() {
       </h2>
       <div className="grid grid-cols-[repeat(4,minmax(0,1fr))] gap-x-10 overflow-hidden border-b border-[oklch(0.922_0_0)]">
         {visibleProducts.map((product) => (
-          <ProductCardLarge product={product} key={product?.id} />
+          <ProductCardLarge
+            product={product}
+            key={product?.id}
+            commonProducts={commonProducts}
+          />
         ))}
       </div>
       <div className="mt-10 text-center text-xs font-semibold text-stone-500">
         <p>
-          Showing {visibleProducts.length} of {products.length} results
+          Showing {visibleProducts.length} of {filterProducts.length} results
         </p>
         <progress
           value={visibleProducts.length}
-          max={products.length}
+          max={filterProducts.length}
           className="progress mt-3 h-[2px] w-50 bg-stone-700"
         />
       </div>
-      {visibleProducts.length === products.length || (
+      {visibleProducts.length === filterProducts.length || (
         <div className="mt-10 text-center">
           <Button
             variant={"border"}

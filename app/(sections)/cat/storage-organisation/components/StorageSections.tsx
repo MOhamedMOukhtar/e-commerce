@@ -41,7 +41,7 @@ function StorageSections() {
   return (
     <div className="mt-15 -mb-20">
       <div className="my-12">
-        <h2 className="mb-10 text-2xl">Shop by Price</h2>
+        <h2 className="mb-10 text-2xl">Shop by Types</h2>
         <CustomScrollSec>
           {sections.map((section) => (
             <Link

@@ -62,7 +62,9 @@ export default function ProductCardLarge({
               {product.title}
             </p>
             <p className="text-sm">{product.shortSummary}</p>
-            <p className="py-2 text-3xl font-bold">
+            <p
+              className={`py-2 text-3xl font-bold ${product.highlight ? "mt-2 w-fit bg-amber-300 px-3 py-1 shadow-[2px_2px_0_#cc0008] before:left-1" : ""}`}
+            >
               <span className="inline-block -translate-y-3 transform text-xs font-bold">
                 EGP
               </span>

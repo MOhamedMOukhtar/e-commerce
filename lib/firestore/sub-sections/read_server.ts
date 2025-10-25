@@ -23,3 +23,14 @@ export async function getSubSectionInSection(id: string) {
   );
   return list.docs.map((doc) => doc.data());
 }
+
+export async function getAffordableEssentials() {
+  const list = await getDocs(
+    query(
+      collection(db, "products"),
+      where(`subSection`, `==`, `eRbOdm13dExeeHUmUY78`),
+      where(`price`, `<`, 6000),
+    ),
+  );
+  return list.docs.map((doc) => doc.data());
+}

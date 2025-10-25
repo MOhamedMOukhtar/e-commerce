@@ -28,8 +28,6 @@ function BasicDetails({ data, handleData }: PropsBasicDetails) {
   const { data: subSection } = useSubSections("order", "asc", sectionId);
   const { data: sub_subSection } = useSubSubSections(sectionId, subSectionId);
 
-  console.log(sectionId);
-
   return (
     <section className="flex flex-1 flex-col gap-4 rounded-md border bg-white p-4">
       <h1 className="font-semibold text-black/70">Basic Details</h1>
@@ -240,6 +238,36 @@ function BasicDetails({ data, handleData }: PropsBasicDetails) {
           name="product-recomended-product"
           value={String(data.recommended ?? false)}
           onChange={(e) => handleData("recommended", e.target.value)}
+          className="w-full rounded-sm border px-4 py-2 text-sm! outline-none"
+        >
+          <option value={"false"}>No</option>
+          <option value={"true"}>Yes</option>
+        </select>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-gray-500" htmlFor="highlight-product">
+          Highlight Product
+        </label>
+        <select
+          id="highlight-product"
+          name="highlight-product"
+          value={String(data.highlight ?? false)}
+          onChange={(e) => handleData("highlight", e.target.value)}
+          className="w-full rounded-sm border px-4 py-2 text-sm! outline-none"
+        >
+          <option value={"false"}>No</option>
+          <option value={"true"}>Yes</option>
+        </select>
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-sm text-gray-500" htmlFor="trending-product">
+          Trending
+        </label>
+        <select
+          id="trending-product"
+          name="trending-product"
+          value={String(data.trending ?? false)}
+          onChange={(e) => handleData("trending", e.target.value)}
           className="w-full rounded-sm border px-4 py-2 text-sm! outline-none"
         >
           <option value={"false"}>No</option>

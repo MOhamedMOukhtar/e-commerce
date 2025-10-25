@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import CustomScroll from "../(sections)/components/secProducts/CustomScroll";
 import { cn } from "@/lib/utils";
 import { TSubSubSection } from "@/types/sub-subsection/subSubSection";
+import { usePathname } from "next/navigation";
 
 function CustomScrollSec({
   children,
@@ -46,6 +47,8 @@ function CustomScrollSec({
   const [initialContentScrollLeft, setInitialContentScrollLeft] =
     useState<number>(0);
   const [isDragging, setIsDragging] = useState(false);
+
+  const pathname = usePathname();
 
   function handleResize() {
     if (!scrollTrackRef.current || !contentRef.current) return;
@@ -113,7 +116,16 @@ function CustomScrollSec({
         content.removeEventListener("scroll", handleThumbPosition);
       };
     }
-  }, [handleThumbPosition, contentRef, exploreSubSection, clickedItem]);
+  }, [
+    handleThumbPosition,
+    contentRef,
+    exploreSubSection,
+    clickedItem,
+    subSubSections,
+    pathname,
+    activeProductId,
+    children,
+  ]);
 
   function handleThumbMousedown(e: React.MouseEvent<HTMLDivElement>) {
     e.preventDefault();

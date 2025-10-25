@@ -16,8 +16,6 @@ function TablesChairsOnOffers() {
     fetch();
   }, []);
 
-  console.log(products);
-
   const visibleProducts = products.slice(0, visibleCount);
 
   return (
