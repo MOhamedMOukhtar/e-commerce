@@ -29,19 +29,20 @@ export async function getSubSubSectionInSubSection(id: string) {
   return list.docs.map((doc) => doc.data()) || null;
 }
 
-// special for explore
-// export async function getSubSubSectionBySlug(slug: string) {
-//   const list = await getDocs(
-//     query(collection(db, "sub-subsections"), where(`slug`, `==`, slug)),
-//   );
-//   return list.docs.map((doc) => doc.data()) || null;
-// }
 export async function getSubSubSectionBySlug(slug: string) {
   const list = await getDocs(
     query(collection(db, "sub-subsections"), where("slug", "==", slug)),
   );
 
   // Get the first matching document (if any)
+  const doc = list.docs[0];
+  return doc ? doc.data() : null;
+}
+
+export async function chechSubSubSectionBySlug(slug: string) {
+  const list = await getDocs(
+    query(collection(db, "sub-subsections"), where("slug", "==", slug)),
+  );
   const doc = list.docs[0];
   return doc ? doc.data() : null;
 }

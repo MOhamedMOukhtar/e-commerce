@@ -20,17 +20,23 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+type TProductEdit = Omit<TProduct, "featureImage"> & {
+  featureImage: string;
+};
+
 function Product() {
   const contentRef = useRef<HTMLDivElement>(null);
   const [showUp, setShowUp] = useState(false);
   const [showDown, setShowDown] = useState(true);
   const [showInfo, setShowInfo] = useState(false);
   const [showArrow, setShowArrow] = useState(false);
-  const [product, setProduct] = useState<TProduct | null>(null);
-  const [mainProduct, setMainProduct] = useState<TProduct | null>(null);
-  const [commonProduct, setCommonProduct] = useState<TProduct[] | null>(null);
-  const [hoverProduct, setHoverProduct] = useState<TProduct | null>(null);
-  const [activeImage, setActiveImage] = useState<File | null | undefined>(null);
+  const [product, setProduct] = useState<TProductEdit | null>(null);
+  const [mainProduct, setMainProduct] = useState<TProductEdit | null>(null);
+  const [commonProduct, setCommonProduct] = useState<TProductEdit[] | null>(
+    null,
+  );
+  const [hoverProduct, setHoverProduct] = useState<TProductEdit | null>(null);
+  const [activeImage, setActiveImage] = useState<string>("");
   const [detMeas, setDetMeas] = useState<"details" | "measurements">("details");
   const [showGoodToKnow, setShowGoodToKnow] = useState(false);
   const [showMaterialsAndCare, setShowMaterialsAndCare] = useState(false);
@@ -101,7 +107,7 @@ function Product() {
   // fetch product
   useEffect(() => {
     async function fetchProduct() {
-      const product = (await getProduct({ id })) as TProduct;
+      const product = (await getProduct({ id })) as TProductEdit;
       setProduct(product);
       setMainProduct(product);
       setActiveImage(product?.featureImage);
@@ -116,7 +122,7 @@ function Product() {
     async function fetchCommonProduct() {
       const products = (await getCommonProducts(
         product?.commonID || "",
-      )) as TProduct[];
+      )) as TProductEdit[];
       setCommonProduct(products);
     }
 

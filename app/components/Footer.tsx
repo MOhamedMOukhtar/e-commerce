@@ -74,30 +74,34 @@ function Footer() {
             </li>
           </ul>
           <ul className="flex gap-6">
-            <li className="border">
+            <li className="h-[37px] w-[52px] border">
               <Image
-                src={
-                  "https://www.ikea.com/global/assets/logos/external-payment-providers/american-express.svg"
-                }
-                width={50}
-                height={50}
                 alt="american-express"
+                src="https://www.ikea.com/global/assets/logos/external-payment-providers/american-express.svg"
+                width={0}
+                height={0}
+                sizes="50px"
+                style={{ width: "50px", height: "auto" }}
               />
             </li>
             <li className="border">
               <Image
-                src="https://www.ikea.com/global/assets/logos/external-payment-providers/visa.svg"
-                width={50}
-                height={50}
                 alt="visa"
+                src="https://www.ikea.com/global/assets/logos/external-payment-providers/visa.svg"
+                width={0}
+                height={0}
+                sizes="50px"
+                style={{ width: "50px", height: "auto" }}
               />
             </li>
             <li className="border">
               <Image
-                src="https://www.ikea.com/global/assets/logos/external-payment-providers/master-card.svg"
-                width={50}
-                height={50}
                 alt="master-card"
+                src="https://www.ikea.com/global/assets/logos/external-payment-providers/master-card.svg"
+                width={0}
+                height={0}
+                sizes="50px"
+                style={{ width: "50px", height: "auto" }}
               />
             </li>
           </ul>

@@ -340,3 +340,23 @@ progress.progress::-webkit-progress-value {
 progress.progress::-moz-progress-bar {
   @apply bg-black;
 }
+
+@keyframes bull-bounce {
+  0% {
+    transform: translateY(-10px);
+  }
+  20% {
+    transform: translateY(-10px);
+  }
+  70% {
+    transform: translateY(12px); /* rebounds slightly */
+  }
+
+  100% {
+    transform: translateY(-10px); /* back to rest */
+  }
+}
+
+.animate-bull-bounce {
+  animation: bull-bounce 0.6s infinite ease-in-out;
+}

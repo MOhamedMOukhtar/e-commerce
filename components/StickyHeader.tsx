@@ -47,7 +47,6 @@ function StickyHeaderChild() {
   const [scrollDir, setScrollDir] = useState("up");
 
   const { user } = useAuth();
-  if (user) console.log("User in sticky header:", user);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -117,8 +116,8 @@ function StickyHeaderChild() {
 
       await createUser({
         uid: credential.user?.uid,
-        displayName: credential.user?.displayName,
-        photoURL: credential.user?.photoURL,
+        displayName: credential.user?.displayName as string,
+        photoURL: credential.user?.photoURL as string,
       });
     } catch (error) {
       console.error("Login failed:", error);
@@ -140,7 +139,15 @@ function StickyHeaderChild() {
       >
         <div className="flex items-center gap-10">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/ikean.png" width={100} height={100} alt="logo-IKean" />
+            <Image
+              src="/ikean.png"
+              width={0}
+              height={0}
+              sizes="100px"
+              style={{ width: "100px", height: "auto" }}
+              alt="logo-IKean"
+              priority
+            />
           </Link>
           <div className="relative">
             <Search
@@ -154,6 +161,12 @@ function StickyHeaderChild() {
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <Link
+            href={"/admin/dashboard"}
+            className="rounded-sm bg-black/90 px-3 py-1.5 text-white"
+          >
+            Admin
+          </Link>
           <div
             className={`cursor-pointer ${user ? "" : "rounded-full p-2.5 hover:bg-gray-200"}`}
             onClick={() => setShowInfo(true)}
@@ -166,9 +179,12 @@ function StickyHeaderChild() {
               <UserRound size={22} strokeWidth={2.5} />
             )}
           </div>
-          <div className="cursor-pointer rounded-full p-2.5 hover:bg-gray-200">
+          <Link
+            href={"/favourites"}
+            className="cursor-pointer rounded-full p-2.5 hover:bg-gray-200"
+          >
             <Heart size={22} strokeWidth={2.5} />
-          </div>
+          </Link>
           <div className="cursor-pointer rounded-full p-2.5 hover:bg-gray-200">
             <svg viewBox="0 0 25 25" width="28" height="28" strokeWidth="0.5">
               <path
@@ -180,8 +196,8 @@ function StickyHeaderChild() {
             </svg>
           </div>
         </div>
-        {/* show login */}
       </nav>
+      {/* show login */}
       <div
         className={`fixed top-0 left-0 z-200 h-screen w-screen bg-black/30 transition duration-200 ${showInfo ? "" : "pointer-events-none"}`}
         style={{

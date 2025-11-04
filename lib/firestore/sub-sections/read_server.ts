@@ -34,3 +34,19 @@ export async function getAffordableEssentials() {
   );
   return list.docs.map((doc) => doc.data());
 }
+
+export async function checkSubSectionBySlug(slug: string) {
+  const list = await getDocs(
+    query(collection(db, "sub-sections"), where("slug", "==", slug)),
+  );
+  const doc = list.docs[0];
+  return doc ? doc.data() : null;
+}
+
+export async function checkTipsAndOffers(slug: string) {
+  const list = await getDocs(
+    query(collection(db, "sub-sections"), where("slug", "==", slug)),
+  );
+  const doc = list.docs[0];
+  return doc ? doc.data() : null;
+}

@@ -1,13 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import SecRooms from "./components/SecRooms";
-import SecTipsIdeas from "./components/SecTipsIdeas";
-import SecOffersCampaigns from "./components/SecOffersCampaigns";
-import Products from "./components/secProducts/Products";
-import ExploreSubSection from "./components/secProducts/components/ExploreSubSection";
 import { usePathname } from "next/navigation";
+import SecTipsIdeas from "./components/SecTipsIdeas";
+import Products from "./components/secProducts/Products";
+import SecOffersCampaigns from "./components/SecOffersCampaigns";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { checkTipsAndOffers } from "@/lib/firestore/sub-sections/read_server";
 import { getSubSubSectionBySlug } from "@/lib/firestore/sub-subsection/read_server";
+import ExploreSubSection from "./components/secProducts/components/ExploreSubSection";
 
 function Sections() {
   const [sectionTitle, setSectionTitle] = useState<string | null>("");
@@ -15,8 +16,20 @@ function Sections() {
   const [clickedItem, setClickedItem] = useState<string>("");
   const pathname = usePathname();
 
-  console.log(pathname.split("/").at(-1));
-  console.log("nader");
+  useEffect(() => {
+    async function chechSection() {
+      const check = await checkTipsAndOffers(
+        pathname.split("/").at(-1) as string,
+      );
+      if (check?.section === "tbd1aisJFlt9LdOgU6yJ") {
+        setSectionTitle("tips-ideas");
+      }
+      if (check?.section === "L4LmDKjPIv3y9FI5DSUM") {
+        setSectionTitle("offers-campaigns");
+      }
+    }
+    chechSection();
+  }, [pathname]);
 
   const [showSections, startHover, endHover, hover, end, display] =
     useHoverTimeout(600);
@@ -25,10 +38,20 @@ function Sections() {
     if (pathname === "/") {
       setSectionTitle("products");
     }
+    if (pathname.includes("rooms")) {
+      setSectionTitle("rooms");
+    } else {
+      setSectionTitle("products");
+    }
     if (pathname.endsWith("storage-organisation")) {
       setSectionTitle("explore");
       setExploreSubSection("eRbOdm13dExeeHUmUY78");
       setClickedItem("eRbOdm13dExeeHUmUY78");
+    }
+    if (pathname.endsWith("tables-desks")) {
+      setSectionTitle("explore");
+      setExploreSubSection("yxwEc0Mjk86rwG9bacWQ");
+      setClickedItem("yxwEc0Mjk86rwG9bacWQ");
     }
   }, [pathname]);
 

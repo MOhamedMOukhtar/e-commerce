@@ -37,29 +37,24 @@ const buttonVariants = cva(
   },
 );
 
-function Button({
+function CustomButtomPlus({
   className,
   variant,
   size,
   asChild = false,
   children,
   loading = false,
-  disabled = false,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
     loading?: boolean;
-    disabled?: boolean;
   }) {
   const Comp = asChild ? Slot : "button";
   return (
     <Comp
       data-slot="button"
-      className={cn(
-        buttonVariants({ variant, size, className }),
-        disabled && "pointer-events-none opacity-50",
-      )}
+      className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     >
       {loading ? (
@@ -71,4 +66,4 @@ function Button({
   );
 }
 
-export { Button, buttonVariants };
+export { CustomButtomPlus, buttonVariants };

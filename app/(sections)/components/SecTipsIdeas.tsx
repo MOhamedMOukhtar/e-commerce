@@ -35,11 +35,6 @@ function SecTipsIdeas({
             </Link>
           </li>
         </div>
-        {/* <div className="underline-pointer flex flex-col gap-2">
-          <li>Ideas</li>
-          <li>Inspiration</li>
-          <li>Brochures</li>
-        </div> */}
       </ul>
     </section>
   );

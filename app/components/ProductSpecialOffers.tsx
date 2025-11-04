@@ -2,19 +2,52 @@
 
 import { getSpecialOffers } from "@/lib/firestore/special-offers/read_server";
 import { TProduct } from "@/types/product/product";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CustomScrollSec from "./CustomScrollSec";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProductCardSmall from "./ProductCardSmall";
+import AuthContextProvider, { useAuth } from "@/context/AutnContext";
+import { getUser } from "@/lib/firestore/user/read_server";
+import { PageChildProps } from "../favourites/page";
 
-function ProductSpecialOffers() {
+export default function ProductSpecialOffers() {
+  return (
+    <AuthContextProvider>
+      <ProductSpecialOffersChild />
+    </AuthContextProvider>
+  );
+}
+
+function ProductSpecialOffersChild() {
   const [products, setProducts] = useState<TProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userD, setUserD] = useState<PageChildProps[]>([]);
+  const [favoritesList, setFavoritesList] = useState<string[]>([]);
+  const { user } = useAuth();
+
+  const fetchUser = useCallback(async () => {
+    try {
+      if (!user?.uid) return;
+      const userRef = await getUser({ id: user.uid });
+      if (!userRef) return;
+      setUserD(userRef.favorites);
+      setFavoritesList(() =>
+        userRef.favorites.map((list: PageChildProps) => list.list).flat(),
+      );
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    fetchUser();
+  }, [user?.uid, fetchUser]);
 
   useEffect(() => {
     const fetchSpecialOffers = async () => {
       setLoading(true);
-      const specialOffers = (await getSpecialOffers(14)) as TProduct[];
+      const specialOffers = (await getSpecialOffers()) as TProduct[];
       setProducts(specialOffers);
       setLoading(false);
     };
@@ -44,12 +77,18 @@ function ProductSpecialOffers() {
   return (
     <div>
       <CustomScrollSec>
-        {products.map((product) => {
-          return <ProductCardSmall product={product} key={product.id} />;
+        {products.slice(0, 16).map((product) => {
+          return (
+            <ProductCardSmall
+              product={product}
+              key={product.id}
+              userD={userD}
+              favoritesList={favoritesList}
+              fetchUser={fetchUser}
+            />
+          );
         })}
       </CustomScrollSec>
     </div>
   );
 }
-
-export default ProductSpecialOffers;
