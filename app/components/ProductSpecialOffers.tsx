@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ProductCardSmall from "./ProductCardSmall";
 import AuthContextProvider, { useAuth } from "@/context/AutnContext";
 import { getUser } from "@/lib/firestore/user/read_server";
-import { PageChildProps } from "../favourites/page";
+import { TFavorites } from "../favorites/page";
 
 export default function ProductSpecialOffers() {
   return (
@@ -21,8 +21,10 @@ export default function ProductSpecialOffers() {
 function ProductSpecialOffersChild() {
   const [products, setProducts] = useState<TProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userD, setUserD] = useState<PageChildProps[]>([]);
-  const [favoritesList, setFavoritesList] = useState<string[]>([]);
+  const [favoritesLists, setFavoritesLists] = useState<TFavorites[]>([]);
+  const [favoriteList, setFavoriteList] = useState<
+    { id: string; quantity: number }[]
+  >([]);
   const { user } = useAuth();
 
   const fetchUser = useCallback(async () => {
@@ -30,9 +32,10 @@ function ProductSpecialOffersChild() {
       if (!user?.uid) return;
       const userRef = await getUser({ id: user.uid });
       if (!userRef) return;
-      setUserD(userRef.favorites);
-      setFavoritesList(() =>
-        userRef.favorites.map((list: PageChildProps) => list.list).flat(),
+      if (!userRef.favorites) return;
+      setFavoritesLists(userRef.favorites);
+      setFavoriteList(() =>
+        userRef.favorites?.map((list: TFavorites) => list.list).flat(),
       );
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -82,8 +85,8 @@ function ProductSpecialOffersChild() {
             <ProductCardSmall
               product={product}
               key={product.id}
-              userD={userD}
-              favoritesList={favoritesList}
+              favoritesLists={favoritesLists}
+              favoriteList={favoriteList}
               fetchUser={fetchUser}
             />
           );

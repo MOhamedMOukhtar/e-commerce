@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { PageChildProps } from "../favourites/page";
+import { TFavorites } from "../favorites/page";
 import { getProduct } from "@/lib/firestore/products/read_server";
 import { TProduct } from "@/types/product/product";
 import Image from "next/image";
@@ -11,24 +11,26 @@ function RemoveList({
   setListsRemove,
   btnLoading,
 }: {
-  fav: PageChildProps;
+  fav: TFavorites;
   listsRemove: string[];
   setListsRemove: React.Dispatch<React.SetStateAction<string[]>>;
   btnLoading?: boolean;
 }) {
   const [product, setProduct] = useState<TProduct | null>(null);
 
-  useEffect(() => {
-    async function fetchProducts() {
-      if (fav.list.length >= 1) {
-        const product = await getProduct({ id: fav.list[0] });
-        setProduct(product as TProduct);
-      } else {
-        setProduct(null);
-      }
+  async function fetchProducts() {
+    if (fav.list.length >= 1) {
+      const product = await getProduct({ id: fav.list[0].id });
+      console.log(product);
+      setProduct(product as TProduct);
+    } else {
+      setProduct(null);
     }
+  }
+
+  useEffect(() => {
     fetchProducts();
-  }, [fav]);
+  }, []);
 
   return (
     <div

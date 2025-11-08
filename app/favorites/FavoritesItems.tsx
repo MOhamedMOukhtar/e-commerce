@@ -14,14 +14,15 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import CustomButton from "@/components/CustomButton";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import FavouritesList from "../components/FavouritesList";
+import FavoritesList from "../components/FavoritesList";
 import { moveAllItems } from "@/lib/firestore/user/write";
-import FavouritesSidebar, {
+
+import { ShopPlus } from "@/components/icons/Shop";
+import FavoritesSidebar, {
   ExtendedHTMLElement,
-} from "./components/FavouritesSidebar";
+} from "./components/FavoritesSidebar";
 
 function FavoritesItems({
   id,
@@ -58,7 +59,9 @@ function FavoritesItems({
 
   useEffect(() => {
     async function fetchAll() {
-      const data = await Promise.all(fav.list.map((id) => getProduct({ id })));
+      const data = await Promise.all(
+        fav.list.map((product) => getProduct({ id: product.id })),
+      );
       setProducts(data as TProduct[]);
     }
     fetchAll();
@@ -79,11 +82,11 @@ function FavoritesItems({
 
   async function handleSubmitChangeName(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
+    setBtnLoading(true);
     await handleChangeListName(fav.id, listName);
     handleSetChangeName();
     setShowInfo("");
-    setLoading(false);
+    setBtnLoading(false);
   }
 
   // handle move all items
@@ -130,14 +133,14 @@ function FavoritesItems({
           </p>
         </div>
         <button
-          className="hover:bg-accent ml-auto cursor-pointer rounded-full p-4"
+          className="ml-auto cursor-pointer rounded-full p-4 hover:bg-[#dfdfdf]"
           onClick={() => setShowInfo("settings")}
         >
           <Ellipsis size={18} />
         </button>
       </div>
       {products.length ? (
-        <Link href={`/favourites/${fav.id}-${id}`} className="">
+        <Link href={`/favorites/${fav.id}-${id}`} className="">
           <div>
             <div className="flex w-fit cursor-pointer gap-1 overflow-x-auto bg-[#f5f5f5] p-1">
               {products.slice(0, 5).map((products) => (
@@ -157,17 +160,17 @@ function FavoritesItems({
           </div>
         </Link>
       ) : (
-        <Link href={`/favourites/${fav.id}-${id}`} className="cursor-pointer">
+        <Link href={`/favorites/${fav.id}-${id}`} className="cursor-pointer">
           <span className="text-muted-foreground flex h-[250px] w-[250px] items-center bg-[#f5f5f5] px-10 text-center text-sm underline">
             This list is waiting for your first product
           </span>
         </Link>
       )}
-      {/* show login */}
-      <FavouritesSidebar showInfo={showInfo} setShowInfo={setShowInfo}>
+      {/* show settings */}
+      <FavoritesSidebar showInfo={showInfo} setShowInfo={setShowInfo}>
         <div
           onClick={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-[-15px] h-screen w-[480px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-9 pt-24 pb-12 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "settings" ? "translate-x-0" : "translate-x-full"}`}
+          className={`fixed top-0 right-[-15px] h-screen w-[480px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-9 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "settings" ? "translate-x-0" : "translate-x-full"}`}
         >
           <div className="absolute top-5 left-0 flex w-full items-center justify-between px-5">
             <h3 className="m-auto self-center">{fav.listName}</h3>
@@ -180,7 +183,7 @@ function FavoritesItems({
               <X size={20} opacity={0.6} strokeWidth={3} />
             </button>
           </div>
-          <div className="divide-y divide-gray-300 text-[15px] [&>div]:flex [&>div]:items-center [&>div]:gap-2 [&>div]:py-6">
+          <div className="flex h-full flex-col text-[15px] [&>div]:flex [&>div]:items-center [&>div]:gap-2 [&>div]:border-b [&>div]:border-black/10 [&>div]:py-7">
             {fav.list.length >= 1 && (
               <div
                 className="cursor-pointer font-semibold hover:underline"
@@ -206,6 +209,13 @@ function FavoritesItems({
             >
               <Trash2 size={16} /> Remove list
             </div>
+            <Button
+              variant={"default"}
+              className="mt-auto w-full rounded-full border-[#004f93] bg-[#004f93] py-6 hover:border-[#004683] hover:bg-[#004683]"
+            >
+              <ShopPlus />
+              Add all items to bag
+            </Button>
           </div>
         </div>
         {/* move all items to another list */}
@@ -238,7 +248,7 @@ function FavoritesItems({
                 .reverse()
                 .filter((favorite) => favorite.id !== fav.id)
                 .map((favorite) => (
-                  <FavouritesList
+                  <FavoritesList
                     key={favorite.id}
                     fav={favorite}
                     handleMoveAllItems={handleMoveAllItems}
@@ -364,7 +374,7 @@ function FavoritesItems({
             </Button>
           </form>
         </div>
-      </FavouritesSidebar>
+      </FavoritesSidebar>
       {/* show change name */}
       <div
         className={`fixed top-0 left-0 z-200 h-screen w-screen bg-black/30 transition duration-200 ${changeName ? "" : "pointer-events-none"}`}
@@ -416,6 +426,7 @@ function FavoritesItems({
                   setCreateList("empty");
                 }
               }}
+              disabled={btnLoading}
             />
             <div className="flex justify-between pt-1">
               {listName.length > 50 && (
@@ -454,6 +465,7 @@ function FavoritesItems({
               </span>
             </div>
             <Button
+              variant={"default"}
               loading={btnLoading}
               className="mt-auto h-15 w-full rounded-full"
             >
@@ -479,15 +491,16 @@ function FavoritesItems({
             removed. Once the list is removed it can&apos;t be undone.
           </p>
           <div className="flex gap-3">
-            <CustomButton
-              className="flex-1 rounded-full outline-1 outline-black"
+            <Button
+              variant={"default"}
+              className="flex-1 rounded-full py-6"
               onClick={() => {
                 handleRemove();
               }}
               loading={loading}
             >
               Remove
-            </CustomButton>
+            </Button>
             <Button
               variant={"border"}
               className="flex-1 rounded-full py-6"

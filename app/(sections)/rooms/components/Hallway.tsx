@@ -32,13 +32,13 @@ function Hallway() {
         with things you love to create a fun look that`s unique and welcoming.
       </p>
       <h2 className="mt-12 mb-4 text-2xl font-bold">
-        Gather your favourites in style
+        Gather your favorites in style
       </h2>
       <p className="mb-30 max-w-60/100 text-sm leading-5 text-[#484848]">
         The spacious RISATORP basket is a creative way to carry bulky tableware
         and ingredients between different rooms. The tall sides and moveable
         handle make it easy to move around, for instance when setting the table,
-        or gathering your favourites for a festive drink in the living room.
+        or gathering your favorites for a festive drink in the living room.
       </p>
 
       <h2 className="mt-20 border-b pb-6 text-2xl" id="products">

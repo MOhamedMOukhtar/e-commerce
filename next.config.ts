@@ -1,46 +1,3 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  images: {
-    unoptimized: true,
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "firebasestorage.googleapis.com",
-        port: "",
-        // pathname: "/v0/b/e-commerce-ikean-e962e.firebasestorage.app/o/**",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "static.wikia.nocookie.net",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "media.themoviedb.org",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "pbs.twimg.com",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "www.ikea.com",
-        port: "",
-        pathname: "/**",
-      },
-    ],
-  },
-};
-
-export default nextConfig;
-
 // import type { NextConfig } from "next";
 
 // const nextConfig: NextConfig = {
@@ -56,3 +13,39 @@ export default nextConfig;
 // };
 
 // export default nextConfig;
+
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+        pathname: "/v0/b/e-commerce-ikean-e962e.firebasestorage.app/o/**",
+      },
+      {
+        protocol: "https",
+        hostname: "static.wikia.nocookie.net",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "media.themoviedb.org",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "pbs.twimg.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "www.ikea.com",
+        pathname: "/**",
+      },
+    ],
+  },
+};
+
+export default nextConfig;

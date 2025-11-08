@@ -1,25 +1,27 @@
 import { useEffect, useState } from "react";
-import { TFavorites } from "../favourites/page";
+import { TFavorites } from "../favorites/page";
 import { getProduct } from "@/lib/firestore/products/read_server";
 import { TProduct } from "@/types/product/product";
 import Image from "next/image";
 
-function FavouritesList({
+function FavoritesList({
   fav,
   handleAddToList,
   handleMoveAllItems,
   btnLoading,
+  handleMoveOneItem,
 }: {
   fav: TFavorites;
   handleAddToList?: (listId: string) => Promise<void>;
   handleMoveAllItems?: (toListId: string) => Promise<void>;
   btnLoading?: boolean;
+  handleMoveOneItem?: (tragetListId: string) => Promise<void>;
 }) {
   const [product, setProduct] = useState<TProduct | null>(null);
   useEffect(() => {
     async function fetchProducts() {
       if (fav.list.length >= 1) {
-        const product = await getProduct({ id: fav.list[0] });
+        const product = await getProduct({ id: fav.list[0].id });
         setProduct(product as TProduct);
       } else {
         setProduct(null);
@@ -37,6 +39,9 @@ function FavouritesList({
         }
         if (handleMoveAllItems) {
           handleMoveAllItems(fav.id);
+        }
+        if (handleMoveOneItem) {
+          handleMoveOneItem(fav.id);
         }
       }}
     >
@@ -77,4 +82,4 @@ function FavouritesList({
   );
 }
 
-export default FavouritesList;
+export default FavoritesList;

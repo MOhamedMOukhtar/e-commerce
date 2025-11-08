@@ -2,21 +2,35 @@
 
 import { getRecommended } from "@/lib/firestore/folder/recommended";
 import { TProduct } from "@/types/product/product";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CustomScrollSec from "./CustomScrollSec";
 import { getAccessoriesOffers } from "@/lib/firestore/folder/accessoriesOffer";
 import { getFurnitureOffers } from "@/lib/firestore/folder/FurnitureOffers";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProductCardSmall from "./ProductCardSmall";
+import { getUser } from "@/lib/firestore/user/read_server";
+import AuthContextProvider, { useAuth } from "@/context/AutnContext";
+import { TFavorites } from "../favorites/page";
 
 // Use forwardRef to accept the ref from parent
 
-function RecommendedAccessoriesFurniture() {
+export default function RecommendedAccessoriesFurniture() {
+  return (
+    <AuthContextProvider>
+      <RecommendedAccessoriesFurniturechild />
+    </AuthContextProvider>
+  );
+}
+
+function RecommendedAccessoriesFurniturechild() {
   const [active, setActive] = useState("recommended");
   const [recommended, setRecommended] = useState<TProduct[]>([]);
   const [accessories, setAccessories] = useState<TProduct[]>([]);
   const [furniture, setFurniture] = useState<TProduct[]>([]);
+  const [favoritesLists, setFavoritesLists] = useState<TFavorites[]>([]); // here
+  const [favoriteList, setFavoriteList] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchRecommended = async () => {
@@ -38,6 +52,25 @@ function RecommendedAccessoriesFurniture() {
     fetchAccessoriesOffers();
     fetchFurnitureOffers();
   }, []);
+
+  const fetchUser = useCallback(async () => {
+    try {
+      if (!user?.uid) return;
+      const userRef = await getUser({ id: user.uid });
+      if (!userRef) return;
+      setFavoritesLists(userRef.favorites);
+      setFavoriteList(
+        () => userRef.favorites?.map((list: TFavorites) => list.list).flat(), // here
+      );
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    fetchUser();
+  }, [user?.uid, fetchUser]);
 
   const product =
     active === "recommended"
@@ -90,11 +123,15 @@ function RecommendedAccessoriesFurniture() {
       </div>
       <CustomScrollSec>
         {product.map((product) => (
-          <ProductCardSmall key={product.id} product={product} />
+          <ProductCardSmall
+            fetchUser={fetchUser}
+            key={product.id}
+            product={product}
+            favoritesLists={favoritesLists}
+            favoriteList={favoriteList}
+          />
         ))}
       </CustomScrollSec>
     </div>
   );
 }
-
-export default RecommendedAccessoriesFurniture;

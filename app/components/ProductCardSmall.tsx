@@ -18,32 +18,33 @@ import {
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
-import { PageChildProps } from "../favourites/page";
-import FavouritesList from "./FavouritesList";
+
+import FavoritesList from "./FavoritesList";
 import CustomButton from "@/components/CustomButton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import AuthContextProvider, { useAuth } from "@/context/AutnContext";
 import RemoveList from "./RemoveList";
 import Link from "next/link";
+import { TFavorites } from "../favorites/page";
 
 export default function ProductCardSmall({
   product,
-  userD,
-  favoritesList,
+  favoritesLists,
+  favoriteList,
   fetchUser,
 }: {
   product: TProduct;
-  userD: PageChildProps[];
-  favoritesList: string[];
+  favoritesLists: TFavorites[];
+  favoriteList: { id: string; quantity: number }[];
   fetchUser: () => Promise<void>;
 }) {
   return (
     <AuthContextProvider>
       <ProductCardSmallChild
         product={product}
-        userD={userD}
-        favoritesList={favoritesList}
+        favoritesLists={favoritesLists}
+        favoriteList={favoriteList}
         fetchUser={fetchUser}
       />
     </AuthContextProvider>
@@ -52,13 +53,13 @@ export default function ProductCardSmall({
 
 function ProductCardSmallChild({
   product,
-  userD,
-  favoritesList,
+  favoritesLists,
+  favoriteList,
   fetchUser,
 }: {
   product: TProduct;
-  userD: PageChildProps[];
-  favoritesList: string[];
+  favoritesLists: TFavorites[];
+  favoriteList: { id: string; quantity: number }[];
   fetchUser: () => Promise<void>;
 }) {
   const [hover, setHover] = useState(false);
@@ -74,44 +75,47 @@ function ProductCardSmallChild({
   async function handleFavorite() {
     setIsLoading(true);
     await fetchUser();
-    if (favoritesList.includes(product.id as string)) {
+    if (favoriteList && favoriteList.some((pro) => pro.id === product.id)) {
       setShowInfo("update");
       return;
     }
 
-    if (userD.length === 0) {
+    if (favoritesLists.length === 0) {
       await createFavoriteList({
         uid: user?.uid as string,
-        listName: "Favourites",
-        list: [product.id] as string[],
+        listName: "Favorites",
+        list: [{ id: product.id as string, quantity: 1 }],
       });
-      toast.success(`${product.title} was added to your favourites`);
+
+      toast.success(`${product.title} was added to your favorites`);
     }
 
-    if (userD.length === 1) {
-      await updateFavorites({
+    if (favoritesLists.length === 1) {
+      const res = await updateFavorites({
         uid: user?.uid as string,
-        list: [product.id] as string[],
+        list: [{ id: product.id as string, quantity: 1 }],
       });
-      toast.success(`${product.title} was added to your favourites`);
+      await fetchUser();
+      toast.success(`${product.title} was added to your ${res}`);
+      setIsLoading(false);
     }
-    if (userD.length > 1) {
+    if (favoritesLists.length > 1) {
       setShowInfo("settings");
     }
   }
 
   async function handleAddToList(listId: string) {
     setBtnLoading(true);
-    await addProductToList({
+    const res = await addProductToList({
       uid: user?.uid as string,
       listId,
-      productIds: [product.id as string],
+      products: [{ id: product.id as string, quantity: 1 }],
     });
     await fetchUser();
     setBtnLoading(false);
     setIsLoading(false);
     setShowInfo("");
-    toast.success(`${product.title} was added to your list`);
+    toast.success(`${product.title} was added to your ${res}`);
   }
 
   // delete from list
@@ -120,8 +124,8 @@ function ProductCardSmallChild({
 
     let count = 0;
 
-    userD.map((list) => {
-      if (list.list.includes(product.id as string)) ++count;
+    favoritesLists.map((list) => {
+      if (list.list.some((item) => item.id === product.id)) ++count;
     });
 
     if (count > 1) {
@@ -130,7 +134,7 @@ function ProductCardSmallChild({
       return;
     }
 
-    await deleteItemFromList({
+    const res = await deleteItemFromList({
       uid: user?.uid as string,
       productId: product.id as string,
     });
@@ -138,7 +142,7 @@ function ProductCardSmallChild({
     setBtnLoading(false);
     setIsLoading(false);
     setShowInfo("");
-    toast.success(`${product.title} was removed from your favourites`);
+    toast.success(`${product.title} was removed from your  ${res}`);
   }
 
   async function removeFromList() {
@@ -152,23 +156,23 @@ function ProductCardSmallChild({
     setBtnLoading(false);
     setIsLoading(false);
     setShowInfo("");
-    toast.success(`${product.title} was removed from your favourites`);
+    toast.success(`${product.title} was removed from your selected lists`);
   }
 
   //create list
   async function handleCreateList(e: React.FormEvent) {
     setBtnLoading(true);
     e.preventDefault();
-    await createFavoriteList({
+    const res = await createFavoriteList({
       uid: user?.uid as string,
       listName,
-      list: [product.id] as string[],
+      list: [{ id: product.id as string, quantity: 1 }],
     });
     await fetchUser();
     setBtnLoading(false);
     setIsLoading(false);
     setShowInfo("");
-    toast.success(`${product.title} was added to your list`);
+    toast.success(`${product.title} was added to your ${res}`);
   }
 
   return (
@@ -233,11 +237,8 @@ function ProductCardSmallChild({
             <ShopPlus />
           </button>
           {isLoading ? (
-            <button
-              className="rounded-full p-[15px] hover:bg-gray-200"
-              onClick={handleFavorite}
-            >
-              <span className="animate-bull-bounce block h-2 w-2 rounded-full bg-black" />
+            <button className="rounded-full p-[15px] hover:bg-gray-200">
+              <span className="animate-ball-bounce-small block h-2 w-2 -translate-y-1 rounded-full bg-black" />
             </button>
           ) : (
             <button
@@ -248,7 +249,7 @@ function ProductCardSmallChild({
                 size={18}
                 strokeWidth={3}
                 fill={
-                  favoritesList?.includes(product.id as string)
+                  favoriteList.some((item) => item.id === product.id)
                     ? "black"
                     : "none"
                 }
@@ -289,12 +290,14 @@ function ProductCardSmallChild({
           <div className="flex h-full flex-col">
             <h3>Which list should we save {product.title} to?</h3>
             <div className="mt-10 flex flex-col gap-5">
-              {userD
+              {favoritesLists
                 ?.slice()
                 .reverse()
-                .filter((fav) => !fav.list.includes(product.id as string))
+                .filter(
+                  (fav) => !fav.list.some((item) => item.id === product.id),
+                )
                 .map((fav) => (
-                  <FavouritesList
+                  <FavoritesList
                     key={fav.id}
                     fav={fav}
                     btnLoading={btnLoading}
@@ -302,28 +305,30 @@ function ProductCardSmallChild({
                   />
                 ))}
             </div>
-            <Button
-              variant={"border"}
-              className="mt-auto w-full rounded-full py-6"
-              onClick={() => {
-                setShowInfo("create");
-                setCreateList("");
-                setListName("");
-              }}
-              disabled={btnLoading}
-            >
-              <svg
-                viewBox="0 0 22 22"
-                focusable="false"
-                width="20"
-                height="20"
-                aria-hidden="true"
+            {favoritesLists.length === 10 ? null : (
+              <Button
+                variant={"border"}
+                className="mt-auto w-full rounded-full py-6"
+                onClick={() => {
+                  setShowInfo("create");
+                  setCreateList("");
+                  setListName("");
+                }}
+                disabled={btnLoading}
               >
-                <path d="M20 2H4v20h10v-2H6V4h12v8h2V2z"></path>
-                <path d="M18 14v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2zM8 6h8v2H8V6zm5 4H8v2h5v-2z"></path>
-              </svg>
-              Create new list
-            </Button>
+                <svg
+                  viewBox="0 0 22 22"
+                  focusable="false"
+                  width="20"
+                  height="20"
+                  aria-hidden="true"
+                >
+                  <path d="M20 2H4v20h10v-2H6V4h12v8h2V2z"></path>
+                  <path d="M18 14v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2zM8 6h8v2H8V6zm5 4H8v2h5v-2z"></path>
+                </svg>
+                Create new list
+              </Button>
+            )}
           </div>
         </div>
         {/* update list */}
@@ -418,6 +423,7 @@ function ProductCardSmallChild({
                   setCreateList("empty");
                 }
               }}
+              disabled={btnLoading}
             />
             <div className="flex justify-between pt-1">
               {listName.length > 50 && (
@@ -488,12 +494,14 @@ function ProductCardSmallChild({
           <div className="flex h-full flex-col">
             <h3>Which list should we save {product.title} to?</h3>
             <div className="mt-10 flex flex-col gap-5">
-              {userD
+              {favoritesLists
                 ?.slice()
                 .reverse()
-                .filter((fav) => !fav.list.includes(product.id as string))
+                .filter(
+                  (fav) => !fav.list.some((item) => item.id === product.id),
+                )
                 .map((fav) => (
-                  <FavouritesList
+                  <FavoritesList
                     key={fav.id}
                     fav={fav}
                     handleAddToList={handleAddToList}
@@ -501,28 +509,30 @@ function ProductCardSmallChild({
                   />
                 ))}
             </div>
-            <Button
-              variant={"border"}
-              className="mt-auto w-full rounded-full py-6"
-              onClick={() => {
-                setShowInfo("create");
-                setCreateList("");
-                setListName("");
-              }}
-              disabled={btnLoading}
-            >
-              <svg
-                viewBox="0 0 22 22"
-                focusable="false"
-                width="20"
-                height="20"
-                aria-hidden="true"
+            {favoritesLists.length === 10 ? null : (
+              <Button
+                variant={"border"}
+                className="mt-auto w-full rounded-full py-6"
+                onClick={() => {
+                  setShowInfo("create");
+                  setCreateList("");
+                  setListName("");
+                }}
+                disabled={btnLoading}
               >
-                <path d="M20 2H4v20h10v-2H6V4h12v8h2V2z"></path>
-                <path d="M18 14v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2zM8 6h8v2H8V6zm5 4H8v2h5v-2z"></path>
-              </svg>
-              Create new list
-            </Button>
+                <svg
+                  viewBox="0 0 22 22"
+                  focusable="false"
+                  width="20"
+                  height="20"
+                  aria-hidden="true"
+                >
+                  <path d="M20 2H4v20h10v-2H6V4h12v8h2V2z"></path>
+                  <path d="M18 14v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2zM8 6h8v2H8V6zm5 4H8v2h5v-2z"></path>
+                </svg>
+                Create new list
+              </Button>
+            )}
           </div>
         </div>
         {/* Remove from list */}
@@ -555,10 +565,12 @@ function ProductCardSmallChild({
           <div className="flex h-full flex-col">
             <h2>Which list should we remove {product.title} from?</h2>
             <div className="mt-10 flex flex-col">
-              {userD
+              {favoritesLists
                 ?.slice()
                 .reverse()
-                .filter((fav) => fav.list.includes(product.id as string))
+                .filter((fav) =>
+                  fav.list.some((item) => item.id === product.id),
+                )
                 .map((fav) => (
                   <RemoveList
                     key={fav.id}

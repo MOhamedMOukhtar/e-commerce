@@ -53,6 +53,7 @@ function Button({
     disabled?: boolean;
   }) {
   const Comp = asChild ? Slot : "button";
+
   return (
     <Comp
       data-slot="button"
@@ -63,7 +64,9 @@ function Button({
       {...props}
     >
       {loading ? (
-        <span className="animate-bull-bounce block h-2 w-2 rounded-full bg-black" />
+        <span
+          className={`animate-ball-bounce-small block h-2 w-2 rounded-full ${variant === "default" ? "bg-white" : "bg-black"}`}
+        />
       ) : (
         children
       )}

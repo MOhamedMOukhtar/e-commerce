@@ -5,20 +5,24 @@ export interface ExtendedHTMLElement extends HTMLElement {
   _dragStartedOnOverlay?: boolean;
 }
 
-function FavouritesSidebar({
+function FavoritesSidebar({
   showInfo,
   setShowInfo,
+  changeName,
+  setChangeName,
   children,
 }: {
-  showInfo: string;
-  setShowInfo: React.Dispatch<React.SetStateAction<string>>;
+  showInfo?: string;
+  setShowInfo?: React.Dispatch<React.SetStateAction<string>>;
+  changeName?: boolean;
+  setChangeName?: React.Dispatch<React.SetStateAction<boolean>>;
   children: React.ReactNode;
 }) {
   return (
     <div
-      className={`fixed top-0 left-0 z-200 h-screen w-screen bg-black/30 transition duration-200 ${showInfo ? "" : "pointer-events-none"}`}
+      className={`fixed top-0 left-0 z-200 h-screen w-screen bg-black/30 transition duration-200 ${showInfo || changeName ? "" : "pointer-events-none"}`}
       style={{
-        opacity: showInfo ? "1" : "0",
+        opacity: showInfo || changeName ? "1" : "0",
       }}
       onMouseDown={(e) => {
         const target = e.currentTarget as ExtendedHTMLElement;
@@ -58,21 +62,23 @@ function FavouritesSidebar({
             target._isDragging ||
             (movedX < moveThreshold && movedY < moveThreshold)
           ) {
-            setShowInfo("");
+            if (setShowInfo) setShowInfo("");
+            if (setChangeName) setChangeName(false);
           }
         }
       }}
-      onMouseLeave={(e) => {
-        const target = e.currentTarget as ExtendedHTMLElement;
-        // Only hide if drag started on overlay and mouse leaves while dragging
-        if (target._dragStartedOnOverlay && target._isDragging) {
-          setShowInfo("");
-        }
-      }}
+      // onMouseLeave={(e) => {
+      //   const target = e.currentTarget as ExtendedHTMLElement;
+      //   // Only hide if drag started on overlay and mouse leaves while dragging
+      //   if (target._dragStartedOnOverlay && target._isDragging) {
+      //     if (setShowInfo) setShowInfo("");
+      //     if (setChangeName) setChangeName(false);
+      //   }
+      // }}
     >
       {children}
     </div>
   );
 }
 
-export default FavouritesSidebar;
+export default FavoritesSidebar;

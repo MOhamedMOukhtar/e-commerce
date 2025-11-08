@@ -180,7 +180,7 @@ function StickyHeaderChild() {
             )}
           </div>
           <Link
-            href={"/favourites"}
+            href={"/favorites"}
             className="cursor-pointer rounded-full p-2.5 hover:bg-gray-200"
           >
             <Heart size={22} strokeWidth={2.5} />

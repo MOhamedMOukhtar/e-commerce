@@ -14,9 +14,7 @@ import CustomButton from "@/components/CustomButton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getUser } from "@/lib/firestore/user/read_server";
 import AuthContextProvider, { useAuth } from "@/context/AutnContext";
-import FavouritesSidebar, {
-  ExtendedHTMLElement,
-} from "./components/FavouritesSidebar";
+
 import {
   GoogleAuthProvider,
   signInWithEmailAndPassword,
@@ -38,6 +36,9 @@ import {
   UserRound,
   X,
 } from "lucide-react";
+import FavoritesSidebar, {
+  ExtendedHTMLElement,
+} from "./components/FavoritesSidebar";
 
 const logInSchema = z.object({
   email: z
@@ -59,7 +60,7 @@ export default function Page() {
 
 export interface TFavorites {
   id: string;
-  list: string[];
+  list: { id: string; quantity: number }[];
   listName: string;
 }
 
@@ -95,13 +96,6 @@ function PageChild() {
 
   const id = user?.uid || null;
 
-  // fetch user favorites
-
-  // async function fetchUser() {
-  //   const userN = await getUser({ id });
-  //   setFavorites(userN?.favorites);
-  // }
-
   const fetchUser = useCallback(async () => {
     const userN = await getUser({ id });
     setFavorites(userN?.favorites);
@@ -111,8 +105,6 @@ function PageChild() {
     if (!id) return;
     fetchUser();
   }, [fetchUser, id]);
-
-  console.log("render");
 
   // google login
   async function handleLogin() {
@@ -183,7 +175,7 @@ function PageChild() {
       <div className="mx-12 my-20 space-y-5">
         {favorites?.length ? (
           <>
-            <h1 className="mb-4 text-4xl">Your favourites</h1>
+            <h1 className="mb-4 text-4xl">Your favorites</h1>
             <p className="text-muted-foreground text-sm">
               {favorites?.length} {favorites?.length === 1 ? "list" : "lists"}{" "}
               in total
@@ -210,7 +202,7 @@ function PageChild() {
         ) : (
           <>
             <h1 className="mb-7 text-4xl">
-              You don`t seem to have any favourites yet
+              You don`t seem to have any favorites yet
             </h1>
             <p className="text-[15px] text-gray-600">
               Save and arrange the best bits of your future home here until
@@ -220,7 +212,7 @@ function PageChild() {
             <div className="flex items-center gap-4">
               <Heart size={18} strokeWidth={3} />
               <p className="font-semibold">
-                Save products using the Save to favourites button
+                Save products using the Save to favorites button
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -265,7 +257,7 @@ function PageChild() {
         )}
       </div>
       {/* show login */}
-      <FavouritesSidebar showInfo={showInfo} setShowInfo={setShowInfo}>
+      <FavoritesSidebar showInfo={showInfo} setShowInfo={setShowInfo}>
         <div
           onMouseDown={(e) => {
             e.stopPropagation();
@@ -276,7 +268,7 @@ function PageChild() {
           onMouseUp={(e) => e.stopPropagation()}
           onMouseMove={(e) => e.stopPropagation()}
           onMouseLeave={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-[-15px] h-screen w-1/3 overflow-y-auto rounded-l-lg border border-black/30 bg-white p-12 pt-24 pb-12 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "login" ? "translate-x-0" : "translate-x-full"}`}
+          className={`fixed top-0 right-[-15px] h-screen w-[480px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-12 pt-24 pb-12 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "login" ? "translate-x-0" : "translate-x-full"}`}
         >
           <button
             onClick={() => {
@@ -400,7 +392,7 @@ function PageChild() {
           onMouseUp={(e) => e.stopPropagation()}
           onMouseMove={(e) => e.stopPropagation()}
           onMouseLeave={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-0 box-border h-screen w-3/10 overflow-y-auto rounded-l-lg border border-black/40 bg-white p-6 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "create" ? "translate-x-0" : "translate-x-full"}`}
+          className={`fixed top-0 right-0 box-border h-screen w-[480px] overflow-y-auto rounded-l-lg border border-black/40 bg-white p-6 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "create" ? "translate-x-0" : "translate-x-full"}`}
         >
           <div className="absolute top-7 left-2 flex w-full items-center justify-between pr-4">
             <h2 className="m-auto self-center">Create a new list </h2>
@@ -485,7 +477,7 @@ function PageChild() {
             </CustomButton>
           </form>
         </div>
-      </FavouritesSidebar>
+      </FavoritesSidebar>
     </>
   );
 }
