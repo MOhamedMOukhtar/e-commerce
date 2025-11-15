@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import React from "react";
-import IndicatorTooltip from "./IndicatorTooltip";
+import { PopupInfo } from "./IndicatorPopup";
+import Link from "next/link";
 
 function LowestPrices() {
   return (
@@ -10,12 +11,12 @@ function LowestPrices() {
           <h2 className="mb-8 text-2xl">Our Lowest Prices</h2>
         </div>
         <Button variant={"border"} className="rounded-full border">
-          special offers
+          <Link href="/cat/lowest-price">Lowest Prices</Link>
         </Button>
       </div>
       <div className="my-element relative grid grid-cols-[repeat(12,minmax(0,1fr))] gap-5 text-center">
-        <IndicatorTooltip
-          image={
+        <PopupInfo
+          img={
             "https://www.ikea.com/ext/ingkadam/m/727ed766ccb51e7/original/PH181543.jpg?f=xxs"
           }
           props={[
@@ -25,7 +26,8 @@ function LowestPrices() {
               className: "top-[33%] left-[35%]",
               name: "KONSTFULL",
               summery: "Vase",
-              price: "2,999",
+              price: "2999",
+              id: "zVdaozV89FOU5zVyaT2S",
             },
             {
               side: "right",
@@ -34,6 +36,7 @@ function LowestPrices() {
               name: "LACK",
               summery: "Side table, 55x55 cm",
               price: "795",
+              id: "cDuJN9QW8ADR5VVaBvyG",
             },
             {
               side: "top",
@@ -43,11 +46,13 @@ function LowestPrices() {
               summery: "Side table, 35x35 cm",
               price: "495",
               highlight: true,
+              id: "TtxCQNCZrl0LuecmqkPK",
             },
           ]}
         />
-        <IndicatorTooltip
-          image={
+
+        <PopupInfo
+          img={
             "https://www.ikea.com/ext/ingkadam/m/6e6843164a14a438/original/PH201874_SHI_001.jpg?f=xxs"
           }
           props={[
@@ -59,6 +64,7 @@ function LowestPrices() {
               summery: "Carafe",
               price: "169",
               highlight: true,
+              id: "Fize241Jf2JvBcoyPbF8",
             },
             {
               side: "bottom",
@@ -67,6 +73,7 @@ function LowestPrices() {
               name: "POKAL",
               summery: "Glass",
               price: "89",
+              id: "RH5hKDhXK4NLRCNCEt4y",
             },
             {
               side: "bottom",
@@ -76,6 +83,7 @@ function LowestPrices() {
               summery: "Serving bowl",
               price: "139",
               highlight: true,
+              id: "7pW8ASuRSAaqUhW50aAE",
             },
             {
               side: "top",
@@ -83,8 +91,8 @@ function LowestPrices() {
               className: "top-[60%] left-[54%]",
               name: "ENHET",
               summery: "High fr w shelves",
-              price: "2,695",
-              previousPrice: "7,995",
+              price: "2695",
+              id: "TAl2EK4D0Va8BIzi5TnB",
             },
             {
               side: "top",
@@ -94,7 +102,8 @@ function LowestPrices() {
               summery: "Bowl",
               price: "69",
               highlight: true,
-              show: true,
+              active: true,
+              id: "bCOjVLXlPOQBhu8K6IAZ",
             },
             {
               side: "top",
@@ -104,6 +113,7 @@ function LowestPrices() {
               summery: "Side plate",
               price: "69",
               highlight: true,
+              id: "FI1qO7Tm6vxguGHiWDFL",
             },
             {
               side: "top",
@@ -113,6 +123,7 @@ function LowestPrices() {
               summery: "Plate",
               price: "69",
               highlight: true,
+              id: "NyC2tgrqkMK29kBfxV8F",
             },
             {
               side: "top",
@@ -121,11 +132,12 @@ function LowestPrices() {
               name: "UPPDATERA",
               summery: "Cutlery caddy",
               price: "329",
+              id: "hXhuR7hWECAUGYzb2eCy",
             },
           ]}
         />
-        <IndicatorTooltip
-          image={
+        <PopupInfo
+          img={
             "https://www.ikea.com/ext/ingkadam/m/7fea7c95ef63df42/original/PH184996-crop001.jpg?f=xxs"
           }
           props={[
@@ -136,6 +148,7 @@ function LowestPrices() {
               name: "BURHULT / SIBBHULT",
               summery: "Wall shelf",
               price: "325",
+              id: "qRV5EVOJBrsiVtNN9ofD",
             },
             {
               side: "bottom",
@@ -143,7 +156,8 @@ function LowestPrices() {
               className: "top-[45%] left-[40%]",
               name: "VEBJÖRN",
               summery: "Desk",
-              price: "21,995",
+              price: "21995",
+              id: "idUmmICX6quQqyHBcLLo",
             },
             {
               side: "right",
@@ -151,14 +165,15 @@ function LowestPrices() {
               className: "top-[64%] left-[32%]",
               name: "GLOSTAD",
               summery: "2-seat sofa",
-              price: "9,995",
-              show: true,
+              price: "9995",
+              active: true,
               highlight: true,
+              id: "PkjJ78cWqcMLgc3s6dVw",
             },
           ]}
         />
-        <IndicatorTooltip
-          image={
+        <PopupInfo
+          img={
             "https://www.ikea.com/ext/ingkadam/m/2ab3fed9df5e0aca/original/PH197598.jpg?f=xxs"
           }
           props={[
@@ -168,17 +183,10 @@ function LowestPrices() {
               className: "top-[7%] left-[32%]",
               name: "RÄFFELBJÖRK",
               summery: "Vase",
-              price: "1,799",
+              price: "1799",
+              id: "wT0rVI6VmkG5Zu2OcMMd",
             },
-            {
-              side: "top",
-              align: "start",
-              className: "top-[38%] left-[44%]",
-              name: "TESAMMANS",
-              summery: "Carafe",
-              price: "999",
-              previousPrice: "799",
-            },
+
             {
               side: "left",
               align: "center",
@@ -186,6 +194,7 @@ function LowestPrices() {
               name: "IKEA 365+",
               summery: "Glass",
               price: "499",
+              id: "oTir3M0Kv9e1ZM1qpuYl",
             },
             {
               side: "top",
@@ -193,18 +202,20 @@ function LowestPrices() {
               className: "top-[54%] left-[25%]",
               name: "BAGGEBO",
               summery: "Bookcase",
-              price: "2,795",
+              price: "2795",
               highlight: true,
+              id: "yN8bKz15YeiCAGMIpBnY",
             },
           ]}
         />
-        <IndicatorTooltip
-          image={
+        <PopupInfo
+          img={
             "https://www.ikea.com/images/our-lowest-prices-05cb57a4b1c5c4406620f558a43f126f.jpg?f=xxs"
           }
+          href="/cat/lowest-price"
         />
-        <IndicatorTooltip
-          image={
+        <PopupInfo
+          img={
             "https://www.ikea.com/ext/ingkadam/m/4e3cfde417215408/original/PH193233.jpg?f=xxs"
           }
           props={[
@@ -215,6 +226,7 @@ function LowestPrices() {
               name: "REGOLIT",
               summery: "Pendant lamp shade",
               price: "169",
+              id: "wbq2vYtnsKBRGoqbtSM4",
             },
             {
               side: "bottom",
@@ -223,7 +235,8 @@ function LowestPrices() {
               name: "VALLSTENA",
               summery: "Door",
               price: "945",
-              show: true,
+              active: true,
+              id: "SCQxwntOHLzQ5n56fCqk",
             },
             {
               side: "left",
@@ -233,6 +246,7 @@ function LowestPrices() {
               summery: "Clip-on basket",
               price: "399",
               highlight: true,
+              id: "FT8vrKWfnTHl6nw6IR6e",
             },
             {
               side: "bottom",
@@ -240,8 +254,9 @@ function LowestPrices() {
               className: "top-[40%] left-[47%]",
               name: "TRONES",
               summery: "Shoe cabinet/storage",
-              price: "1,999",
+              price: "1999",
               highlight: true,
+              id: "baIxSqXOjbKJOgDSUQLr",
             },
             {
               side: "right",
@@ -249,12 +264,13 @@ function LowestPrices() {
               className: "top-[38%] left-[32%]",
               name: "TJUSIG",
               summery: "Hanger",
-              price: "1,349",
+              price: "1349",
+              id: "32lASJOo8ESYwqBZKWKr",
             },
           ]}
         />
-        <IndicatorTooltip
-          image="https://www.ikea.com/ext/ingkadam/m/28b434bdc948942a/original/PH204423.jpg?f=xxs"
+        <PopupInfo
+          img="https://www.ikea.com/ext/ingkadam/m/28b434bdc948942a/original/PH204423.jpg?f=xxs"
           props={[
             {
               side: "bottom",
@@ -263,6 +279,7 @@ function LowestPrices() {
               name: "SILVTJÄRN",
               summery: "Toothbrush holder",
               price: "549",
+              id: "7c1KWkLdwvmzKrhu2b0l",
             },
             {
               side: "bottom",
@@ -271,7 +288,8 @@ function LowestPrices() {
               name: "TAVELÅN",
               summery: "Tray",
               price: "899",
-              show: true,
+              active: true,
+              id: "rQS7kBUuA0tCETYLnQFY",
             },
             {
               side: "bottom",
@@ -280,6 +298,7 @@ function LowestPrices() {
               name: "TISKEN",
               summery: "Toothbrush holder with suction cup",
               price: "349",
+              id: "EuE6tdrOAYBIsMmgjNUv",
             },
             {
               side: "right",
@@ -289,6 +308,7 @@ function LowestPrices() {
               summery: "Soap dispenser",
               price: "99",
               highlight: true,
+              id: "KNjR8B3a3FWFnT6QGDDb",
             },
             {
               side: "top",
@@ -296,8 +316,9 @@ function LowestPrices() {
               className: "top-[74%] left-[10%]",
               name: "VESKEN",
               summery: "Trolley",
-              price: "1,199",
+              price: "1199",
               highlight: true,
+              id: "dKU3AJnUZ3z5eU8G4RyS",
             },
             {
               side: "top",
@@ -307,6 +328,7 @@ function LowestPrices() {
               summery: "Handle",
               price: "50",
               highlight: true,
+              id: "uz6OurvSAbvelAOITHYq",
             },
             {
               side: "top",
@@ -315,11 +337,12 @@ function LowestPrices() {
               name: "KLUNKA",
               summery: "Laundry bag",
               price: "899",
+              id: "FNQeOuPsTyBIKmG6QA48",
             },
           ]}
         />
-        <IndicatorTooltip
-          image={
+        <PopupInfo
+          img={
             "https://www.ikea.com/ext/ingkadam/m/136499b057bb1a57/original/PE653321.jpg?f=xxs"
           }
           props={[
@@ -329,7 +352,8 @@ function LowestPrices() {
               className: "top-[12%] left-[42%]",
               name: "LINNMON / ADILS",
               summery: "Table",
-              price: "3,495",
+              price: "3495",
+              id: "dBiqfAMkyrlfCfFyTEdM",
             },
             {
               side: "top",
@@ -337,7 +361,8 @@ function LowestPrices() {
               className: "top-[50%] right-[5%]",
               name: "OLOV",
               summery: "Leg, adjustable",
-              price: "1,000",
+              price: "1000",
+              id: "lhcK75qqPmp2ci2GUa2g",
             },
             {
               side: "top",
@@ -347,6 +372,7 @@ function LowestPrices() {
               summery: "Waste bin",
               price: "99",
               highlight: true,
+              id: "nwLvZqULetJl08tht4wf",
             },
           ]}
         />
@@ -356,39 +382,3 @@ function LowestPrices() {
 }
 
 export default LowestPrices;
-
-/**
-https://www.ikea.com/eg/en/p/konstfull-vase-clear-glass-patterned-20511953/
-https://www.ikea.com/eg/en/p/lack-side-table-white-30449908/
-https://www.ikea.com/eg/en/p/lack-side-table-white-30514791/
-https://www.ikea.com/eg/en/p/pokal-glass-clear-glass-10270478/
-https://www.ikea.com/eg/en/p/karaff-carafe-clear-glass-00342975/
-https://www.ikea.com/eg/en/p/oftast-serving-bowl-white-20439392/
-https://www.ikea.com/eg/en/p/enhet-high-fr-w-shelves-anthracite-20448947/
-https://www.ikea.com/eg/en/p/oftast-bowl-white-80258915/
-https://www.ikea.com/eg/en/p/oftast-side-plate-white-60318939/
-https://www.ikea.com/eg/en/p/oftast-plate-white-30258913/
-https://www.ikea.com/eg/en/p/uppdatera-cutlery-caddy-anthracite-40433105/
-https://www.ikea.com/eg/en/p/burhult-sibbhult-wall-shelf-white-white-s89325963/
-https://www.ikea.com/eg/en/p/vebjoern-desk-beige-60460838/
-https://www.ikea.com/eg/en/p/glostad-2-seat-sofa-knisa-dark-grey-50489012/
-https://www.ikea.com/eg/en/p/raeffelbjoerk-vase-mother-of-pearl-colour-10537656/
-https://www.ikea.com/eg/en/p/tesammans-carafe-blue-90568955/
-https://www.ikea.com/eg/en/p/baggebo-bookcase-white-20436713/
-https://www.ikea.com/eg/en/p/ikea-365-glass-clear-glass-10278356/
-https://www.ikea.com/eg/en/p/silvtjaern-toothbrush-holder-30501915/
-https://www.ikea.com/eg/en/p/tavelan-tray-50465756/
-https://www.ikea.com/eg/en/p/tisken-toothbrush-holder-with-suction-cup-white-80381294/
-https://www.ikea.com/eg/en/p/tackan-soap-dispenser-white-90322303/
-https://www.ikea.com/eg/en/p/vesken-trolley-white-00471222/
-https://www.ikea.com/eg/en/p/gubbarp-handle-white-00336432/
-https://www.ikea.com/eg/en/p/klunka-laundry-bag-white-black-50364371/
-https://www.ikea.com/eg/en/p/regolit-pendant-lamp-shade-white-handmade-70103410/
-https://www.ikea.com/eg/en/p/vallstena-door-white-80541693/
-https://www.ikea.com/eg/en/p/palycke-clip-on-basket-00534432/
-https://www.ikea.com/eg/en/p/fniss-waste-bin-white-40295439/
-https://www.ikea.com/eg/en/p/olov-leg-adjustable-white-10264302/
-https://www.ikea.com/eg/en/p/linnmon-adils-table-white-s29932181/
-https://www.ikea.com/eg/en/p/tjusig-hanger-black-80291707/
-https://www.ikea.com/eg/en/p/trones-shoe-cabinet-storage-white-00397307/
- */

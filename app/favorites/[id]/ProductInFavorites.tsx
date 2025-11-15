@@ -1,9 +1,7 @@
 "use client";
 
 import { ShopPlus } from "@/components/icons/Shop";
-import { getProduct } from "@/lib/firestore/products/read_server";
 import { formatEGP } from "@/lib/helper/formatMoney";
-import { TProduct } from "@/types/product/product";
 import {
   ArrowLeft,
   ArrowRight,
@@ -32,26 +30,24 @@ import { Button } from "@/components/ui/button";
 import { TUser } from "./page";
 import FavoritesList from "@/app/components/FavoritesList";
 import { Input } from "@/components/ui/input";
-
-type TProductEdit = Omit<TProduct, "featureImage"> & {
-  featureImage: string;
-};
+import { TProductEdit } from "./ProductsList";
 
 function ProductInFavorites({
   user,
   userId,
   favouriteId,
-  item,
+  product,
   fetchUser,
+  favoriteList,
 }: {
   user: TUser | null;
   userId: string;
   favouriteId: string;
-  item: { id: string; quantity: number };
+  product: TProductEdit;
   fetchUser: () => Promise<void>;
+  favoriteList: { id: string; quantity: number }[];
 }) {
-  const [product, setProduct] = useState<TProductEdit>();
-  const [quantity, setQuantity] = useState(item.quantity);
+  const [quantity, setQuantity] = useState(0);
   const [showInfo, setShowInfo] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [btnLoading, setBtnLoading] = useState<boolean>(false);
@@ -59,31 +55,34 @@ function ProductInFavorites({
   const [listName, setListName] = useState<string>("");
   const [createList, setCreateList] = useState<string>("");
   const [scale, setScale] = useState<boolean>(false);
+  const [hover, setHover] = useState<boolean>(false);
 
   useEffect(() => {
-    async function fetchProducts() {
-      const product = (await getProduct({ id: item.id })) as TProductEdit;
-      setProduct(product);
-    }
-    fetchProducts();
-  }, [item]);
+    favoriteList.map((pro) => {
+      if (pro.id === product.id) {
+        setQuantity(pro.quantity);
+      }
+    });
+  }, [favoriteList, product.id]);
 
   // Function to handle quantity changes
   async function handleQuantity(action: "plus" | "minus") {
-    if (!userId || !favouriteId || !item?.id) return;
-    if (action === "minus" && quantity === 0) return; // Avoid going below 0
+    if (!userId || !favouriteId) return;
+    // if (action === "minus" && quantity === 0) return; // Avoid going below 0
 
     const newQuantity = action === "plus" ? quantity + 1 : quantity - 1;
     setIsLoading(true);
     // Update quantity in Firestore
     try {
-      await updateQuantity({
-        uid: userId,
-        listId: favouriteId,
-        productId: item.id,
-        quantity: newQuantity,
-      });
-      await fetchUser();
+      await Promise.all([
+        updateQuantity({
+          uid: userId,
+          listId: favouriteId,
+          productId: product.id as string,
+          quantity: newQuantity,
+        }),
+        fetchUser(),
+      ]);
 
       setQuantity(newQuantity);
       setIsLoading(false);
@@ -94,12 +93,12 @@ function ProductInFavorites({
 
   // handle remove product from list
   async function handleRemove() {
-    if (!userId || !favouriteId || !item?.id) return;
+    if (!userId || !favouriteId) return;
     setBtnLoading(true);
     await removeItemFromFavoriteList({
       uid: userId,
       listId: favouriteId,
-      productId: item.id,
+      productId: product.id as string,
     });
     setScale(true);
     await fetchUser();
@@ -113,7 +112,7 @@ function ProductInFavorites({
       uid: userId,
       fromListId: favouriteId,
       toListId: tragetListId,
-      productId: item.id,
+      productId: product.id as string,
     });
     await fetchUser();
     setBtnLoading(false);
@@ -146,93 +145,100 @@ function ProductInFavorites({
   if (!product) return null;
 
   return (
-    <section
-      className={`relative flex origin-top cursor-pointer border-b border-black/20 transition-all duration-300 ease-in-out ${
-        scale
-          ? "max-h-0 scale-y-0 py-0 opacity-0"
-          : "max-h-[250px] scale-y-100 py-10 opacity-100"
-      }`}
-    >
-      <div className="mr-16">
-        <Image
-          src={product.featureImage || "/ikean-logo.png"}
-          width={0}
-          height={0}
-          sizes="120px"
-          style={{ width: "120px", height: "auto" }}
-          alt={product.title}
-        />
-      </div>
-      <div className="relative flex flex-col">
-        {product.salePrice && (
-          <span className="absolute bottom-[calc(100%+5px)] text-sm font-semibold text-red-500">
-            Special offers
-          </span>
-        )}
-        <Link
-          href={`/product/${product.slug}-${product.id}`}
-          className="text-sm font-bold"
-        >
-          {product.title}
-        </Link>
-        <span className="text-sm">{product.shortSummary}</span>
-        {product.salePrice && (
-          <span className="text-muted-foreground text-xs font-semibold">
-            Previous price: EGP {formatEGP(product.price)}
-          </span>
-        )}
-        {quantity > 1 && (
-          <span className="text-muted-foreground mt-3 mb-6 text-xs font-semibold">
-            EGP {formatEGP(product.salePrice || product.price)}/piece
-          </span>
-        )}
-        <div className="mt-auto flex gap-3">
-          <div className="flex items-center gap-5 rounded-full border border-black p-[3px]">
-            <button
-              onClick={() => {
-                if (quantity === 1) {
-                  setIsLoading(true);
-                  handleRemove();
-                  return;
-                }
-                handleQuantity("minus");
-              }}
-              // onClick={() => setScale(true)}
-              disabled={quantity === 0}
-            >
-              <Minus
-                className={`box-content cursor-pointer rounded-full p-1.5 hover:bg-[#dfdfdf] ${quantity === 0 && "pointer-events-none opacity-30"}`}
-                size={16}
-              />
-            </button>
-            <span>{quantity}</span>
-            <button
-              onClick={() => {
-                handleQuantity("plus");
-              }}
-              disabled={quantity === product.stock}
-            >
-              <Plus
-                className={`box-content cursor-pointer rounded-full p-1.5 hover:bg-[#dfdfdf] ${quantity === product.stock && "pointer-events-none opacity-30"}`}
-                size={16}
-              />
-            </button>
-          </div>
-          <div className="cursor-pointer rounded-full border p-1.5 outline outline-black hover:border-black">
-            <ShopPlus />
+    <>
+      <section
+        className={`relative flex origin-top border-b border-black/20 transition-all duration-300 ease-in-out ${
+          scale
+            ? "max-h-0 scale-y-0 py-0 opacity-0"
+            : "max-h-[250px] scale-y-100 py-10 opacity-100"
+        }`}
+      >
+        <div className="mr-16">
+          <Link href={`/product/${product.slug}-${product.id}`}>
+            <Image
+              src={product.featureImage || "/ikean-logo.png"}
+              width={0}
+              height={0}
+              sizes="120px"
+              style={{ width: "120px", height: "auto" }}
+              alt={product.title}
+              className="cursor-pointer"
+              onMouseEnter={() => setHover(true)}
+              onMouseLeave={() => setHover(false)}
+            />
+          </Link>
+        </div>
+        <div className="relative flex flex-col">
+          {product.salePrice && (
+            <span className="absolute bottom-[calc(100%+5px)] text-sm font-semibold text-red-500">
+              Special offers
+            </span>
+          )}
+          <Link
+            href={`/product/${product.slug}-${product.id}`}
+            className={`text-sm font-bold hover:underline ${hover && "underline"}`}
+          >
+            {product.title}
+          </Link>
+          <span className="text-sm">{product.shortSummary}</span>
+          {product.salePrice && (
+            <span className="text-muted-foreground text-xs font-semibold">
+              Previous price: EGP {formatEGP(product.price)}
+            </span>
+          )}
+          {quantity > 1 && (
+            <span className="text-muted-foreground mt-3 mb-6 text-xs font-semibold">
+              EGP {formatEGP(product.salePrice || product.price)}/piece
+            </span>
+          )}
+          <div className="mt-auto flex gap-3">
+            <div className="flex items-center gap-5 rounded-full border border-black p-[3px]">
+              <button
+                onClick={() => {
+                  if (quantity === 1) {
+                    setIsLoading(true);
+                    handleRemove();
+                    return;
+                  }
+                  handleQuantity("minus");
+                }}
+                // onClick={() => setScale(true)}
+                disabled={quantity === 0}
+              >
+                <Minus
+                  className={`box-content cursor-pointer rounded-full p-1.5 hover:bg-[#dfdfdf] ${quantity === 0 && "pointer-events-none opacity-30"}`}
+                  size={16}
+                />
+              </button>
+              <span>{quantity}</span>
+              <button
+                onClick={() => {
+                  handleQuantity("plus");
+                }}
+                disabled={quantity === product.stock}
+              >
+                <Plus
+                  className={`box-content cursor-pointer rounded-full p-1.5 hover:bg-[#dfdfdf] ${quantity === product.stock && "pointer-events-none opacity-30"}`}
+                  size={16}
+                />
+              </button>
+            </div>
+            <div className="cursor-pointer rounded-full border p-1.5 outline outline-black hover:border-black">
+              <ShopPlus />
+            </div>
           </div>
         </div>
-      </div>
-      <div className="ml-auto flex flex-col items-end justify-between text-sm font-bold">
-        <span>
-          EGP {formatEGP((product.salePrice || product.price) * quantity)}
-        </span>
-        <Ellipsis
-          size={18}
-          onClick={() => setShowInfo("settings")}
-          className="box-content cursor-pointer rounded-full p-2.5 hover:bg-[#dfdfdf]"
-        />
-      </div>
+        <div className="ml-auto flex flex-col items-end justify-between text-sm font-bold">
+          <span>
+            EGP {formatEGP((product.salePrice || product.price) * quantity)}
+          </span>
+          <Ellipsis
+            size={18}
+            onClick={() => setShowInfo("settings")}
+            className="box-content cursor-pointer rounded-full p-2.5 hover:bg-[#dfdfdf]"
+          />
+        </div>
+      </section>
       <FavoritesSidebar showInfo={showInfo} setShowInfo={setShowInfo}>
         <div
           onMouseDown={(e) => {
@@ -509,7 +515,7 @@ function ProductInFavorites({
           </div>
         </div>
       )}
-    </section>
+    </>
   );
 }
 

@@ -39,6 +39,7 @@ import {
 import FavoritesSidebar, {
   ExtendedHTMLElement,
 } from "./components/FavoritesSidebar";
+import { Skeleton } from "@mui/material";
 
 const logInSchema = z.object({
   email: z
@@ -97,8 +98,10 @@ function PageChild() {
   const id = user?.uid || null;
 
   const fetchUser = useCallback(async () => {
+    setIsLoading(true);
     const userN = await getUser({ id });
     setFavorites(userN?.favorites);
+    setIsLoading(false);
   }, [id]);
 
   useEffect(() => {
@@ -170,10 +173,82 @@ function PageChild() {
     setCreateList("");
   }, [showInfo]);
 
+  // loading
+  if (isLoading || favorites === null)
+    return (
+      <div className="mx-12 my-20 space-y-2">
+        <Skeleton
+          variant="rectangular"
+          width={400}
+          height={70}
+          animation="wave"
+        />
+        <Skeleton
+          variant="rectangular"
+          width={400}
+          height={20}
+          animation="wave"
+        />
+        <div className="mt-10 flex items-center justify-between">
+          <div className="flex flex-col gap-2">
+            <Skeleton
+              variant="rectangular"
+              width={150}
+              height={15}
+              animation="wave"
+            />
+            <Skeleton
+              variant="rectangular"
+              width={150}
+              height={15}
+              animation="wave"
+            />
+          </div>
+          <span
+            className={`animate-ball-bounce-small block h-2 w-2 rounded-full bg-black`}
+          />
+        </div>
+        <div className="mt-5 flex gap-1">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton
+              key={i}
+              variant="rectangular"
+              width={250}
+              height={250}
+              animation="wave"
+            />
+          ))}
+        </div>
+        {user ? (
+          <Button className="mt-8 flex w-35 cursor-default items-center justify-center rounded-full border-4 border-black hover:bg-black/90">
+            <span
+              className={`animate-ball-bounce-x-small block h-2 w-2 rounded-full bg-white`}
+            />
+          </Button>
+        ) : (
+          <div className="mt-8 flex gap-5">
+            <Button
+              variant={"border"}
+              className="flex w-35 cursor-default items-center justify-center rounded-full border-black outline-none"
+            >
+              <span
+                className={`animate-ball-bounce-x-small block h-2 w-2 cursor-default rounded-full bg-black`}
+              />
+            </Button>
+            <Button className="flex w-35 cursor-default items-center justify-center rounded-full border-4 border-black hover:bg-black/90">
+              <span
+                className={`animate-ball-bounce-x-small block h-2 w-2 rounded-full bg-white`}
+              />
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+
   return (
     <>
       <div className="mx-12 my-20 space-y-5">
-        {favorites?.length ? (
+        {favorites.length ? (
           <>
             <h1 className="mb-4 text-4xl">Your favorites</h1>
             <p className="text-muted-foreground text-sm">
@@ -229,6 +304,7 @@ function PageChild() {
             </div>
           </>
         )}
+
         {user ? (
           <Button
             variant={"default"}

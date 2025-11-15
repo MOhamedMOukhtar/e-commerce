@@ -8,7 +8,7 @@ function SeclectOffers() {
       <Link href="/cat/accessories-on-offer">
         Special Offers on accessories
       </Link>
-      <Link href={""}>Special Offers under 500 EGP</Link>
+      <Link href="/cat/under-500">Special Offers under 500 EGP</Link>
     </div>
   );
 }

@@ -54,6 +54,9 @@ import LowestPrice from "../components/LowestPrice";
 import LimitedEditions from "../components/LimitedEditions";
 import ValueForMoney from "../components/ValueForMoney";
 import TrendingSeason from "../components/TrendingSeason";
+import Under500 from "../components/Under500";
+import FlexibleRockingChair from "../components/FlexibleRockingChair";
+import WingChair from "../components/WingChair";
 
 function Page() {
   const params = useParams();
@@ -118,6 +121,9 @@ function Page() {
   if (slug === "limited-editions") return <LimitedEditions />;
   if (slug === "value-for-money") return <ValueForMoney />;
   if (slug === "trending-season") return <TrendingSeason />;
+  if (slug === "under-500") return <Under500 />;
+  if (slug === "rocking-chairs") return <FlexibleRockingChair />;
+  if (slug === "wing-chair") return <WingChair />;
 }
 
 export default Page;

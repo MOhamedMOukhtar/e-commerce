@@ -46,3 +46,10 @@ export async function getCommonProducts(commonId: string) {
   );
   return list.docs.map((doc) => doc.data());
 }
+
+export async function getProductsUnder(price: number) {
+  const list = await getDocs(
+    query(collection(db, "products"), where(`price`, `<=`, price)),
+  );
+  return list.docs.map((doc) => doc.data());
+}

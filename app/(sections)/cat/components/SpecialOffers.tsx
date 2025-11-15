@@ -4,6 +4,7 @@ import CustomScrollSec from "@/app/components/CustomScrollSec";
 import ProductCardLarge from "@/app/components/ProductCardLarge";
 
 import { Button } from "@/components/ui/button";
+import AuthContextProvider from "@/context/AutnContext";
 import { getSpecialOffers } from "@/lib/firestore/special-offers/read_server";
 import { TProduct } from "@/types/product/product";
 import { ArrowDownRight } from "lucide-react";
@@ -64,7 +65,15 @@ const sections = [
   },
 ];
 
-function SpecialOffers() {
+export default function SpecialOffers() {
+  return (
+    <AuthContextProvider>
+      <SpecialOffersChild />
+    </AuthContextProvider>
+  );
+}
+
+function SpecialOffersChild() {
   const [products, setProducts] = useState<TProduct[]>([]);
   const [visibleCount, setVisibleCount] = useState(16);
   const [commonProducts, setCommonProducts] = useState<TProduct[]>([]);
@@ -175,5 +184,3 @@ function SpecialOffers() {
     </div>
   );
 }
-
-export default SpecialOffers;

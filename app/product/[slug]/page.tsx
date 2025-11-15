@@ -194,6 +194,8 @@ function Product() {
     }
   }
 
+  console.log(commonProduct);
+
   if (loading)
     return (
       <div className="relative mx-12 mt-6">
@@ -235,7 +237,7 @@ function Product() {
               <Skeleton className="mt-8 mb-2 h-4 w-2/10 bg-stone-300" />
               <div className="border p-4">
                 <div className="flex gap-5 border-b pb-4">
-                  <Skeleton className="text-stone-300">
+                  <Skeleton className="h-fit text-stone-300">
                     <svg
                       viewBox="0 0 24 24"
                       focusable="false"
@@ -263,7 +265,7 @@ function Product() {
                   </div>
                 </div>
                 <div className="flex gap-5 pt-4">
-                  <Skeleton className="text-stone-300">
+                  <Skeleton className="h-fit text-stone-300">
                     <svg
                       viewBox="0 0 24 24"
                       focusable="false"
@@ -443,6 +445,7 @@ function Product() {
             <div className="flex gap-1">
               {commonProduct &&
                 commonProduct.map((p) => {
+                  console.log(p);
                   return (
                     <div
                       key={p.id}

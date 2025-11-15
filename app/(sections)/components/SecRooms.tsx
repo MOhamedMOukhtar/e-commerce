@@ -27,6 +27,16 @@ const product = [
     title: "Hallway",
     href: "/rooms/hallway",
   },
+  {
+    img: "https://www.ikea.com/ext/ingkadam/m/12dd4bb7b782761c/original/PH205297.jpg?imwidth=300",
+    title: "Living room",
+    href: "/rooms/living-room",
+  },
+  {
+    img: "https://www.ikea.com/ext/ingkadam/m/12af62aa3e906666/original/PH205175.jpg?imwidth=300",
+    title: "Garden & balcony",
+    href: "/rooms/garden-balcony",
+  },
 ];
 function SecRooms({
   showSections,
@@ -37,7 +47,7 @@ function SecRooms({
 }) {
   return (
     <section
-      className={`content mb-[-35px] overflow-x-auto pb-5 transition-all duration-100 ease-out ${showSections ? "opacity-100" : "opacity-0"} ${display ? "block" : "hidden"}`}
+      className={`content mb-[-35px] overflow-x-auto transition-all duration-100 ease-out ${showSections ? "opacity-100" : "opacity-0"} ${display ? "block" : "hidden"}`}
       id="custom-scrollbars-content"
       style={{
         maxHeight: showSections ? "120px" : "0px",

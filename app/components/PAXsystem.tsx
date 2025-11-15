@@ -38,7 +38,7 @@ function PAXsystem() {
             "https://www.ikea.com/ext/ingkadam/m/692af4725ebe7539/original/PJ24_PCAC_BED_L3_PAX_Animation_Series_System_16x9_WEB.mp4"
           }
         >
-          Sorry, your browser doesn’t support embedded videos.
+          Sorry, your browser doesn`t support embedded videos.
         </video>
         <div
           className="group absolute top-0 right-0 bottom-0 left-0 cursor-pointer"

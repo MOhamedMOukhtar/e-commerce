@@ -7,7 +7,6 @@ import { TProduct } from "@/types/product/product";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface TItem {
@@ -39,11 +38,9 @@ export function PopupInfo({
     ?.filter((item) => item.active)
     .map((item) => item.id) || [null];
 
-  const router = useRouter();
-
   if (href) {
     return (
-      <div className="relative" onClick={() => router.push(href)}>
+      <Link href={href} className="relative">
         <Image
           src={img}
           fill
@@ -51,7 +48,7 @@ export function PopupInfo({
           className="object-cover"
           sizes="100%"
         />
-      </div>
+      </Link>
     );
   }
 
@@ -67,7 +64,7 @@ export function PopupInfo({
         src={img}
         fill
         alt="special offers"
-        className="object-cover"
+        className={`object-cover ${props ? "cursor-pointer" : "cursor-defult"}`}
         sizes="100%"
       />
       {props && !hideAll

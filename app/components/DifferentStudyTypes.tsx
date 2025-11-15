@@ -1,36 +1,44 @@
 import Image from "next/image";
 import CustomScrollSec from "./CustomScrollSec";
 import React from "react";
+import Link from "next/link";
 
 function DifferentStudyTypes() {
   const sections = [
     {
       img: "https://www.ikea.com/images/rocking-2631371e4ef6c19ebcb30e6f893a63be.jpg?f=xxxs",
       title: "Flexible rocking chair",
+      href: "/cat/rocking-chairs",
     },
     {
       img: "https://www.ikea.com/ext/ingkadam/m/28aa2a7c171e8ce6/original/PH200204.jpg?f=xxxs",
       title: "Cozy cushions",
+      href: "/cat/textiles",
     },
     {
       img: "https://www.ikea.com/images/outdoor-69e3adb2721cedfade5546a613909b03.jpg?f=xxxs",
       title: "Outdoor seating",
+      href: "/cat/outdoor-products",
     },
     {
       img: "https://www.ikea.com/ext/ingkadam/m/6acfc93618badf94/original/PH205409.jpg?f=xxxs",
       title: "Sit/stand desk",
+      href: "/cat/desks-computer-desks",
     },
     {
       img: "https://www.ikea.com/ext/ingkadam/m/dae9b17cfa2978b/original/PH186573-crop001.jpg?f=xxxs",
       title: "Wing chairs",
+      href: "/cat/wing-chair",
     },
     {
       img: "https://www.ikea.com/ext/ingkadam/m/54d7373742273a2b/original/PH198852.JPG?f=xxxs",
       title: "Study & gaming",
+      href: "/cat/gaming-furniture",
     },
     {
       img: "https://www.ikea.com/ext/ingkadam/m/5e29efb1e49336f/original/PH205106.jpg?f=xxxs",
       title: "Desk's supplementary",
+      href: "/cat/desks-computer-desks",
     },
   ];
 
@@ -59,11 +67,14 @@ function DifferentStudyTypes() {
                 alt={section.title}
                 width={400}
                 height={400}
-                className="mb-8 aspect-[1/1.3] w-full object-cover"
+                className="mb-8 aspect-[1/1.3] w-full cursor-pointer object-cover"
               />
-              <button className="absolute bottom-14 left-1/2 -translate-x-1/2 cursor-pointer rounded-full bg-white px-4 py-2 text-xs font-semibold text-nowrap">
+              <Link
+                href={section.href}
+                className="absolute bottom-14 left-1/2 -translate-x-1/2 cursor-pointer rounded-full bg-white px-4 py-2 text-xs font-semibold text-nowrap hover:bg-[#e2e2e2]"
+              >
                 {section.title}
-              </button>
+              </Link>
             </div>
           ))}
         </CustomScrollSec>

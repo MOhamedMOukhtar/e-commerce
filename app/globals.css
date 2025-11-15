@@ -264,7 +264,6 @@
 /*grid-work*/
 .grid-work > div {
   position: relative;
-  cursor: pointer;
 }
 .grid-work > :nth-child(1) {
   aspect-ratio: 1/1.343;

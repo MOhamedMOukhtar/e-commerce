@@ -13,10 +13,8 @@ import ShopByRooms from "./components/ShopByRooms";
 import PAXsystem from "./components/PAXsystem";
 import ExperienceIKEAN from "./components/ExperienceIKEAN";
 import IKEANFood from "./components/IKEANFood";
-import Test from "./components/Test";
 
 export default function Home() {
-  // return <Test />;
   return (
     <main>
       <div className="mt-15 px-10">

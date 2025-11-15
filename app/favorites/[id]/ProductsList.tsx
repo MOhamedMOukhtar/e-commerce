@@ -36,6 +36,10 @@ import { useRouter } from "next/navigation";
 import ProductInFavorites from "./ProductInFavorites";
 import { Skeleton } from "@mui/material";
 
+export type TProductEdit = Omit<TProduct, "featureImage"> & {
+  featureImage: string;
+};
+
 export default function ProductsList({
   userId,
   listId,
@@ -45,53 +49,59 @@ export default function ProductsList({
 }) {
   const [user, setUser] = useState<TUser | null>(null);
   const [totalPrice, setTotalPrice] = useState<number>(0);
-
+  const [fetchProduct, setFetchProduct] = useState<boolean>(false);
+  const [products, setProducts] = useState<TProductEdit[]>([]);
   const [favoriteList, setFavoriteList] = useState<TFavorites>({
     id: "",
     listName: "",
     list: [],
   });
 
-  async function fetchUser() {
+  async function fetchUserAndProducts() {
     try {
       const user = (await getUser({ id: userId })) as TUser;
       setUser(user);
-      const favouriteList = user.favorites.find(
-        (list) => list.id === listId,
-      ) as TFavorites;
+
+      const favouriteList = user.favorites.find((list) => list.id === listId);
+      if (!favouriteList) return;
+
       setFavoriteList(favouriteList);
 
       if (favouriteList.list.length === 0) {
         setTotalPrice(0);
+        setFetchProduct(true); // mark fetch complete
         return;
       }
 
       const results = await Promise.all(
         favouriteList.list.map(async (item) => {
-          const product = (await getProduct({ id: item.id })) as TProduct;
+          const product = (await getProduct({ id: item.id })) as TProductEdit;
           return { ...product, quantity: item.quantity };
         }),
       );
 
-      let total = 0;
+      setProducts(results);
 
+      let total = 0;
       results.forEach((product) => {
         total += (product.salePrice || product.price) * product.quantity;
       });
 
       setTotalPrice(total);
-    } catch (error) {
-      console.error("Error fetching user:", error);
+      setFetchProduct(true);
+    } catch (err) {
+      console.error(err);
     }
   }
 
   useEffect(() => {
-    fetchUser();
+    fetchUserAndProducts();
   }, []);
 
-  console.log(totalPrice);
+  const length = favoriteList.list.length || 3;
 
-  if (!user || favoriteList.list.length === 0 || totalPrice === 0)
+  // loading
+  if (!fetchProduct)
     return (
       <>
         <Skeleton variant="rectangular" height={40} width={350} />
@@ -113,7 +123,7 @@ export default function ProductsList({
               <Skeleton variant="rectangular" height={18} width={80} />
             </div>
             <div className={`flex flex-col`}>
-              {Array.from({ length: 3 }).map((_, length) => {
+              {Array.from({ length: length }).map((_, length) => {
                 return (
                   <section
                     key={length}
@@ -207,9 +217,10 @@ export default function ProductsList({
         userId={userId}
         listId={listId}
         favoriteList={favoriteList}
-        fetchUser={fetchUser}
+        fetchUser={fetchUserAndProducts}
         user={user}
         totalPrice={totalPrice}
+        products={products}
       />
     </>
   );
@@ -222,6 +233,7 @@ function ProductsListChild({
   fetchUser,
   user,
   totalPrice,
+  products,
 }: {
   userId: string;
   listId: string;
@@ -229,6 +241,7 @@ function ProductsListChild({
   fetchUser: () => Promise<void>;
   user: TUser | null;
   totalPrice: number;
+  products: TProductEdit[];
 }) {
   const [showInfo, setShowInfo] = useState<string>("");
   const [changeName, setChangeName] = useState<boolean>(false);
@@ -236,6 +249,7 @@ function ProductsListChild({
   const [confirm, setConfirm] = useState<boolean>(false);
   const [listName, setListName] = useState<string>("");
   const [btnLoading, setBtnLoading] = useState<boolean>(false);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -323,14 +337,15 @@ function ProductsListChild({
               </span>
             </div>
             <div className={`flex flex-col`}>
-              {favoriteList?.list?.map((item) => (
+              {products.map((product) => (
                 <ProductInFavorites
-                  key={item.id}
+                  key={product.id}
                   user={user}
-                  item={item}
+                  product={product}
                   userId={userId}
                   favouriteId={favoriteList.id}
                   fetchUser={fetchUser}
+                  favoriteList={favoriteList.list}
                 />
               ))}
             </div>

@@ -60,6 +60,8 @@ export async function createNewProduct({
 
   const newId = doc(collection(db, "ids")).id;
 
+  console.log(newId);
+
   await setDoc(doc(db, `products/${newId}`), {
     ...data,
     id: newId,

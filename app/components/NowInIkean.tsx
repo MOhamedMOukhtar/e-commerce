@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 function NowInIkean() {
@@ -7,10 +8,10 @@ function NowInIkean() {
     <div className="my-20">
       <h2 className="my-10 text-2xl">Now in IKEA Egypt</h2>
       <div className="flex gap-5">
-        <div className="group cursor-pointer">
+        <Link href="/cat/trending-season" className="group cursor-pointer">
           <div>
             <Image
-              src="https://www.ikea.com/images/banner-of-free-accessories-delivery-a12a3d654718a11d59ed77bce6be69a9.jpg?f=xs"
+              src="https://www.ikea.com/images/s-aa5c7a78d984e01fcf48ff22aa133c8f.jpg?f=xxl"
               alt="Free delivery"
               width={1000}
               height={1000}
@@ -19,18 +20,22 @@ function NowInIkean() {
           </div>
           <div className="relative aspect-[1/0.6] p-8">
             <h2 className="mb-2 text-2xl group-hover:underline">
-              Free delivery to your doorstep across Egypt
+              Trending this season
             </h2>
             <p className="text-black/80">
-              on accessory purchases over 250 EGP and up to 20 KGs per order.
+              Discover this season&apos;s hottest categories. Browse and get
+              ready to refresh your home.
             </p>
             <ArrowRight
               className="absolute bottom-7 left-7 box-content rounded-full bg-black p-3.5"
               color="white"
             />
           </div>
-        </div>
-        <div className="group cursor-pointer">
+        </Link>
+        <Link
+          href="/cat/affordable-essentials"
+          className="group cursor-pointer"
+        >
           <div>
             <Image
               src="https://www.ikea.com/images/affordable-essentials-d841cd8fea996c8dc32dc722dac0560f.jpg?f=xs"
@@ -53,31 +58,31 @@ function NowInIkean() {
               color="white"
             />
           </div>
-        </div>
-        <div className="group cursor-pointer">
+        </Link>
+        <Link href="/cat/lowest-price" className="group cursor-pointer">
           <div>
             <Image
-              src="https://www.ikea.com/ext/ingkadam/m/3d7e9c08e9efebab/original/PH205475-crop001.jpg?f=xs"
+              src="https://www.ikea.com/images/our-lowest-prices-05cb57a4b1c5c4406620f558a43f126f.jpg?f=xxs"
               alt="Hurry Up!"
               width={1000}
               height={1000}
               className="aspect-square object-cover"
             />
           </div>
-          <div className="relative aspect-[1/0.6] bg-[#9b3a37] p-8 text-white">
+          <div className="relative aspect-[1/0.6] bg-[#7e7025] p-8 text-white">
             <h2 className="mb-2 text-2xl group-hover:underline">
-              Wake up, it&apos;s time to sleep!
+              Plan to upgrade your home
             </h2>
             <p className="text-white/80">
-              Thanks to our soft and colorful textiles, you can start your day
-              stress-free.
+              Plan to upgrade your home with a large selection of IKEA&apos;s
+              lowest prices possible
             </p>
             <ArrowRight
               className="absolute bottom-7 left-7 box-content rounded-full bg-white p-3.5"
               color="black"
             />
           </div>
-        </div>
+        </Link>
       </div>
     </div>
   );
