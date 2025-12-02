@@ -11,6 +11,7 @@ import {
   Minus,
   Plus,
   Trash2,
+  TriangleAlert,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -31,6 +32,7 @@ import { TUser } from "./page";
 import FavoritesList from "@/app/components/FavoritesList";
 import { Input } from "@/components/ui/input";
 import { TProductEdit } from "./ProductsList";
+import { TFavorites } from "../page";
 
 function ProductInFavorites({
   user,
@@ -38,14 +40,16 @@ function ProductInFavorites({
   favouriteId,
   product,
   fetchUser,
-  favoriteList,
+  objectList,
+  setFavoriteList,
 }: {
   user: TUser | null;
-  userId: string;
+  userId: string | null;
   favouriteId: string;
   product: TProductEdit;
   fetchUser: () => Promise<void>;
-  favoriteList: { id: string; quantity: number }[];
+  objectList: { id: string; quantity: number }[];
+  setFavoriteList: React.Dispatch<React.SetStateAction<TFavorites>>;
 }) {
   const [quantity, setQuantity] = useState(0);
   const [showInfo, setShowInfo] = useState<string>("");
@@ -57,21 +61,60 @@ function ProductInFavorites({
   const [scale, setScale] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
 
+  const localFavorites: TFavorites[] = JSON.parse(
+    window.localStorage.getItem("favoriteList") || "[]",
+  );
+
   useEffect(() => {
-    favoriteList.map((pro) => {
+    objectList.map((pro) => {
       if (pro.id === product.id) {
         setQuantity(pro.quantity);
       }
     });
-  }, [favoriteList, product.id]);
+  }, [objectList, product.id]);
 
   // Function to handle quantity changes
   async function handleQuantity(action: "plus" | "minus") {
-    if (!userId || !favouriteId) return;
-    // if (action === "minus" && quantity === 0) return; // Avoid going below 0
-
-    const newQuantity = action === "plus" ? quantity + 1 : quantity - 1;
+    //WORK-HERE
     setIsLoading(true);
+    if (!userId) {
+      const localFavorites = window.localStorage.getItem("favoriteList");
+      let favoritesArray: TFavorites[] = [];
+      if (localFavorites) {
+        favoritesArray = JSON.parse(localFavorites);
+      }
+      const updatedFavorites = favoritesArray.map((fav) => {
+        if (fav.id === favouriteId) {
+          return {
+            ...fav,
+            list: fav.list?.map((p) => {
+              if (p.id === product.id) {
+                return {
+                  ...p,
+                  quantity: action === "plus" ? p.quantity + 1 : p.quantity - 1,
+                };
+              }
+              return p;
+            }),
+          };
+        }
+        return fav;
+      });
+
+      window.localStorage.setItem(
+        "favoriteList",
+        JSON.stringify(updatedFavorites),
+      );
+      setQuantity(action === "plus" ? quantity + 1 : Math.max(0, quantity - 1));
+      await fetchUser();
+      setIsLoading(false);
+      // setFavoriteList(updatedFavorites);
+      return;
+    }
+
+    if (!favouriteId) return;
+    const newQuantity = action === "plus" ? quantity + 1 : quantity - 1;
+
     // Update quantity in Firestore
     try {
       await Promise.all([
@@ -93,7 +136,40 @@ function ProductInFavorites({
 
   // handle remove product from list
   async function handleRemove() {
-    if (!userId || !favouriteId) return;
+    if (!userId) {
+      // setBtnLoading(true);
+      const localFavorites = window.localStorage.getItem("favoriteList");
+      let favoritesArray: TFavorites[] = [];
+      if (localFavorites) {
+        favoritesArray = JSON.parse(localFavorites);
+      }
+      const updatedFavorites = favoritesArray.map((fav) => {
+        if (fav.id === favouriteId) {
+          return { ...fav, list: fav.list?.filter((p) => p.id !== product.id) };
+        }
+        return fav;
+      });
+
+      window.localStorage.setItem(
+        "favoriteList",
+        JSON.stringify(updatedFavorites),
+      );
+
+      setFavoriteList((prev) => ({
+        ...prev,
+        list: prev.list.filter((p) => p.id !== product.id),
+      }));
+
+      setScale(true);
+      await fetchUser();
+      // setBtnLoading(false);
+      setConfirm(false);
+      setShowInfo("");
+      return;
+    }
+
+    if (!favouriteId) return;
+    setIsLoading(true);
     setBtnLoading(true);
     await removeItemFromFavoriteList({
       uid: userId,
@@ -107,6 +183,49 @@ function ProductInFavorites({
 
   // handle move one product
   async function handleMoveOneItem(tragetListId: string) {
+    if (!userId) {
+      setBtnLoading(true);
+      const localFavorites = window.localStorage.getItem("favoriteList");
+      let favoritesArray: TFavorites[] = [];
+      if (localFavorites) {
+        favoritesArray = JSON.parse(localFavorites);
+      }
+      const fromIndex = favoritesArray.findIndex((f) => f.id === favouriteId);
+      const toIndex = favoritesArray.findIndex((f) => f.id === tragetListId);
+
+      const fromList = favoritesArray[fromIndex].list || [];
+      const toList = favoritesArray[toIndex].list || [];
+
+      const itemIndex = fromList.findIndex((i) => i.id === product.id);
+
+      const [item] = fromList.splice(itemIndex, 1);
+
+      const existing = toList.find((i) => i.id === product.id);
+      if (existing) {
+        existing.quantity += item.quantity;
+      } else {
+        toList.push(item);
+      }
+
+      favoritesArray[fromIndex].list = fromList;
+      favoritesArray[toIndex].list = toList;
+
+      console.log(favoritesArray);
+
+      window.localStorage.setItem(
+        "favoriteList",
+        JSON.stringify(favoritesArray),
+      );
+
+      setFavoriteList((prev) => ({
+        ...prev,
+        list: prev.list.filter((p) => p.id !== product.id),
+      }));
+      setScale(true);
+      await fetchUser();
+      setBtnLoading(false);
+      return;
+    }
     setBtnLoading(true);
     await moveOneProduct({
       uid: userId,
@@ -140,105 +259,121 @@ function ProductInFavorites({
       body.style.overflowY = "auto";
       body.style.paddingRight = "0";
     }
+    return () => {
+      body.style.overflowY = "auto";
+      body.style.paddingRight = "0";
+    };
   }, [showInfo, user]);
 
-  if (!product) return null;
+  console.log(showInfo);
 
   return (
     <>
-      <section
-        className={`relative flex origin-top border-b border-black/20 transition-all duration-300 ease-in-out ${
-          scale
-            ? "max-h-0 scale-y-0 py-0 opacity-0"
-            : "max-h-[250px] scale-y-100 py-10 opacity-100"
-        }`}
-      >
-        <div className="mr-16">
-          <Link href={`/product/${product.slug}-${product.id}`}>
-            <Image
-              src={product.featureImage || "/ikean-logo.png"}
-              width={0}
-              height={0}
-              sizes="120px"
-              style={{ width: "120px", height: "auto" }}
-              alt={product.title}
-              className="cursor-pointer"
-              onMouseEnter={() => setHover(true)}
-              onMouseLeave={() => setHover(false)}
-            />
-          </Link>
-        </div>
-        <div className="relative flex flex-col">
-          {product.salePrice && (
-            <span className="absolute bottom-[calc(100%+5px)] text-sm font-semibold text-red-500">
-              Special offers
+      <div className="relative">
+        <section
+          className={`relative flex origin-top border-b border-black/20 transition-all duration-300 ease-in-out ${
+            scale
+              ? "max-h-0 scale-y-0 py-0 opacity-0"
+              : "max-h-[250px] scale-y-100 py-10 opacity-100"
+          }`}
+        >
+          <div className="mr-16">
+            <Link href={`/product/${product.slug}-${product.id}`}>
+              <Image
+                src={product.featureImage || "/ikean-logo.png"}
+                width={0}
+                height={0}
+                sizes="120px"
+                style={{ width: "120px", height: "auto" }}
+                alt={product.title}
+                className="cursor-pointer"
+                onMouseEnter={() => setHover(true)}
+                onMouseLeave={() => setHover(false)}
+              />
+            </Link>
+          </div>
+          <div className="relative flex flex-col">
+            {product.salePrice && (
+              <span className="absolute bottom-[calc(100%+5px)] text-sm font-semibold text-red-500">
+                Special offers
+              </span>
+            )}
+            <Link
+              href={`/product/${product.slug}-${product.id}`}
+              className={`text-sm font-bold hover:underline ${hover && "underline"}`}
+            >
+              {product.title}
+            </Link>
+            <span className="text-sm text-gray-600">
+              {product.shortSummary}
             </span>
-          )}
-          <Link
-            href={`/product/${product.slug}-${product.id}`}
-            className={`text-sm font-bold hover:underline ${hover && "underline"}`}
-          >
-            {product.title}
-          </Link>
-          <span className="text-sm">{product.shortSummary}</span>
-          {product.salePrice && (
-            <span className="text-muted-foreground text-xs font-semibold">
-              Previous price: EGP {formatEGP(product.price)}
-            </span>
-          )}
-          {quantity > 1 && (
-            <span className="text-muted-foreground mt-3 mb-6 text-xs font-semibold">
-              EGP {formatEGP(product.salePrice || product.price)}/piece
-            </span>
-          )}
-          <div className="mt-auto flex gap-3">
-            <div className="flex items-center gap-5 rounded-full border border-black p-[3px]">
-              <button
-                onClick={() => {
-                  if (quantity === 1) {
-                    setIsLoading(true);
-                    handleRemove();
-                    return;
-                  }
-                  handleQuantity("minus");
-                }}
-                // onClick={() => setScale(true)}
-                disabled={quantity === 0}
-              >
-                <Minus
-                  className={`box-content cursor-pointer rounded-full p-1.5 hover:bg-[#dfdfdf] ${quantity === 0 && "pointer-events-none opacity-30"}`}
-                  size={16}
-                />
-              </button>
-              <span>{quantity}</span>
-              <button
-                onClick={() => {
-                  handleQuantity("plus");
-                }}
-                disabled={quantity === product.stock}
-              >
-                <Plus
-                  className={`box-content cursor-pointer rounded-full p-1.5 hover:bg-[#dfdfdf] ${quantity === product.stock && "pointer-events-none opacity-30"}`}
-                  size={16}
-                />
-              </button>
-            </div>
-            <div className="cursor-pointer rounded-full border p-1.5 outline outline-black hover:border-black">
-              <ShopPlus />
+            {product.salePrice && (
+              <span className="text-muted-foreground text-xs font-semibold">
+                Previous price: EGP {formatEGP(product.price)}
+              </span>
+            )}
+            {quantity > 1 && (
+              <span className="text-muted-foreground mt-3 mb-6 text-xs font-semibold">
+                EGP {formatEGP(product.salePrice || product.price)}/piece
+              </span>
+            )}
+            <div className="mt-auto flex gap-3">
+              <div className="flex items-center gap-5 rounded-full border border-black p-[3px]">
+                <button
+                  onClick={() => {
+                    if (quantity === 1) {
+                      handleRemove();
+                      return;
+                    }
+                    handleQuantity("minus");
+                  }}
+                  // onClick={() => setScale(true)}
+                  disabled={quantity === 0}
+                >
+                  <Minus
+                    className={`box-content cursor-pointer rounded-full p-1.5 hover:bg-[#dfdfdf] ${quantity === 0 && "pointer-events-none opacity-30"}`}
+                    size={16}
+                  />
+                </button>
+                <span>{quantity}</span>
+                <button
+                  onClick={() => {
+                    handleQuantity("plus");
+                  }}
+                  disabled={quantity === product.stock}
+                >
+                  <Plus
+                    className={`box-content cursor-pointer rounded-full p-1.5 hover:bg-[#dfdfdf] ${quantity === product.stock && "pointer-events-none opacity-30"}`}
+                    size={16}
+                  />
+                </button>
+              </div>
+              <div className="cursor-pointer rounded-full border p-1.5 outline outline-black hover:border-black">
+                <ShopPlus />
+              </div>
             </div>
           </div>
-        </div>
-        <div className="ml-auto flex flex-col items-end justify-between text-sm font-bold">
-          <span>
-            EGP {formatEGP((product.salePrice || product.price) * quantity)}
-          </span>
-          <Ellipsis
-            size={18}
-            onClick={() => setShowInfo("settings")}
-            className="box-content cursor-pointer rounded-full p-2.5 hover:bg-[#dfdfdf]"
-          />
-        </div>
-      </section>
+          <div className="ml-auto flex flex-col items-end justify-between text-sm font-bold">
+            <span>
+              EGP {formatEGP((product.salePrice || product.price) * quantity)}
+            </span>
+            <Ellipsis
+              size={18}
+              onClick={() => setShowInfo("settings")}
+              className="box-content cursor-pointer rounded-full p-2.5 hover:bg-[#dfdfdf]"
+            />
+          </div>
+        </section>
+        {isLoading && (
+          <div className="absolute bottom-[1px] -left-5 h-[calc(100%-2px)] w-[calc(100%+40px)] backdrop-blur-[3px]">
+            <div className="relative h-full w-full">
+              <span
+                className={`animate-ball-bounce-large absolute top-15 right-1/2 block h-4 w-4 rounded-full bg-[#004f93]`}
+              />
+            </div>
+          </div>
+        )}
+      </div>
       <FavoritesSidebar showInfo={showInfo} setShowInfo={setShowInfo}>
         <div
           onMouseDown={(e) => {
@@ -250,7 +385,7 @@ function ProductInFavorites({
           onMouseUp={(e) => e.stopPropagation()}
           onMouseMove={(e) => e.stopPropagation()}
           onMouseLeave={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-[-15px] h-screen w-[480px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-8 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "settings" ? "translate-x-0" : "translate-x-full"}`}
+          className={`fixed top-0 right-[-15px] h-screen w-[460px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-8 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "settings" ? "translate-x-0" : "translate-x-full"}`}
         >
           <div className="flex h-full flex-col justify-between">
             <div className="absolute top-5 left-0 flex w-full items-center justify-between px-5">
@@ -297,9 +432,9 @@ function ProductInFavorites({
         </div>
         <div
           onClick={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-[-15px] h-screen w-[480px] overflow-y-auto rounded-l-lg border border-black/30 bg-white px-9 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "moveItem" ? "translate-x-0" : "translate-x-full"}`}
+          className={`fixed top-0 right-[-15px] h-screen w-[460px] overflow-y-auto rounded-l-lg border border-black/30 bg-white transition duration-200 [scrollbar-gutter:stable] ${showInfo === "moveItem" ? "translate-x-0" : "translate-x-full"} flex flex-col ps-6 pt-6`}
         >
-          <div className="absolute top-5 left-0 flex w-full items-center justify-between px-5">
+          <div className="flex items-center justify-between pe-5">
             <button
               onClick={() => setShowInfo("settings")}
               className="cursor-pointer"
@@ -316,12 +451,12 @@ function ProductInFavorites({
               <X size={20} opacity={0.6} strokeWidth={3} />
             </button>
           </div>
-          <div className="flex h-full flex-col">
+          <div className="mt-10 flex flex-1 flex-col overflow-y-auto pr-6">
             <h2 className="text-[19px]">
               Which list should we move {product.title} to?
             </h2>
             <div className={`my-10 flex flex-col gap-5`}>
-              {user?.favorites
+              {(user ? user.favorites : localFavorites)
                 ?.slice()
                 .reverse()
                 .filter((favorite) => favorite.id !== favouriteId)
@@ -334,30 +469,52 @@ function ProductInFavorites({
                   />
                 ))}
             </div>
-            {user && user.favorites.length === 10 ? null : (
-              <Button
-                variant={"border"}
-                className="mt-auto w-full rounded-full py-6"
-                disabled={btnLoading}
-                onClick={() => {
-                  setShowInfo("create");
-                  setListName("");
-                }}
-              >
-                <svg
-                  viewBox="0 0 22 22"
-                  focusable="false"
-                  width="20"
-                  height="20"
-                  aria-hidden="true"
-                >
-                  <path d="M20 2H4v20h10v-2H6V4h12v8h2V2z"></path>
-                  <path d="M18 14v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2zM8 6h8v2H8V6zm5 4H8v2h5v-2z"></path>
-                </svg>
-                Create new list
-              </Button>
-            )}
           </div>
+          {user ? (
+            user.favorites.length === 10
+          ) : localFavorites.length === 10 ? (
+            <div className="-ml-6 rounded-[4px] border-l-4 border-[#f26a2f] shadow-[3px_8px_10px_rgba(0,0,0,0.08)]">
+              <div className="flex gap-3 p-4">
+                <TriangleAlert color="#f26a2f" className="shrink-0" />
+                <div>
+                  <p className="mb-1 font-semibold">List limit reached</p>
+                  <p className="text-sm text-gray-600">
+                    Please remove one favourite list to be able to add more
+                    lists. The number of products within each list is not
+                    affected by this limit, so you can still add to or edit the
+                    existing ones.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href={"/favorites"}
+                className="float-right me-4 cursor-pointer rounded-full px-4 py-1 text-sm font-semibold hover:bg-[#dfdfdf]"
+              >
+                Go to favorites
+              </Link>
+            </div>
+          ) : (
+            <Button
+              variant={"border"}
+              className="my-6 me-6 rounded-full py-6"
+              onClick={() => {
+                setShowInfo("create");
+                setListName("");
+              }}
+            >
+              <svg
+                viewBox="0 0 22 22"
+                focusable="false"
+                width="20"
+                height="20"
+                aria-hidden="true"
+              >
+                <path d="M20 2H4v20h10v-2H6V4h12v8h2V2z"></path>
+                <path d="M18 14v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2zM8 6h8v2H8V6zm5 4H8v2h5v-2z"></path>
+              </svg>
+              Create new list
+            </Button>
+          )}
         </div>
         <div
           onMouseDown={(e) => {
@@ -369,7 +526,7 @@ function ProductInFavorites({
           onMouseUp={(e) => e.stopPropagation()}
           onMouseMove={(e) => e.stopPropagation()}
           onMouseLeave={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-[-15px] h-screen w-[480px] overflow-y-auto rounded-l-lg border border-black/30 bg-white px-9 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "create" ? "translate-x-0" : "translate-x-full"}`}
+          className={`fixed top-0 right-[-15px] h-screen w-[460px] overflow-y-auto rounded-l-lg border border-black/30 bg-white px-9 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "create" ? "translate-x-0" : "translate-x-full"}`}
         >
           <div className="absolute top-5 left-0 flex w-full items-center justify-between px-5">
             <button
@@ -506,15 +663,6 @@ function ProductInFavorites({
           </div>
         </div>
       </div>
-      {isLoading && (
-        <div className="absolute top-0 -left-5 h-full w-[calc(100%+40px)] backdrop-blur-[3px]">
-          <div className="relative h-full w-full">
-            <span
-              className={`animate-ball-bounce-large absolute top-15 right-1/2 block h-4 w-4 rounded-full bg-[#004f93]`}
-            />
-          </div>
-        </div>
-      )}
     </>
   );
 }

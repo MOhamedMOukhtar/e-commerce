@@ -127,5 +127,3 @@ function Page() {
 }
 
 export default Page;
-
-//Tables & chairs

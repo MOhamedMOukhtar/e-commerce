@@ -12,7 +12,7 @@ import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createUser } from "@/lib/firestore/user/write";
+import { createUser, mergeFavorites } from "@/lib/firestore/user/write";
 import AuthContextProvider, { useAuth } from "@/context/AutnContext";
 import { Heart, LogOut, Search, UserRound, X } from "lucide-react";
 import {
@@ -21,6 +21,9 @@ import {
   signInWithPopup,
   signOut,
 } from "firebase/auth";
+import FavoritesSidebar from "@/app/favorites/components/FavoritesSidebar";
+import { getUser } from "@/lib/firestore/user/read_server";
+import { TFavorites } from "@/app/favorites/page";
 
 const logInSchema = z.object({
   email: z
@@ -42,9 +45,11 @@ export default function StickyHeader() {
 
 function StickyHeaderChild() {
   const pathname = usePathname();
-  const [showInfo, setShowInfo] = useState<boolean>(false);
+  const [showInfo, setShowInfo] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [scrollDir, setScrollDir] = useState("up");
+  const [notMergedList, setNotMergedList] = useState<TFavorites[] | null>(null);
+  const [numProductOnCarts, setNumProductOnCarts] = useState(0);
 
   const { user } = useAuth();
 
@@ -81,11 +86,9 @@ function StickyHeaderChild() {
   }, [showInfo]);
 
   useEffect(() => {
-    setShowInfo(false);
+    setShowInfo("");
   }, [user]);
 
-  //////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////
   const {
     register,
     handleSubmit,
@@ -119,6 +122,40 @@ function StickyHeaderChild() {
         displayName: credential.user?.displayName as string,
         photoURL: credential.user?.photoURL as string,
       });
+
+      const id = credential.user?.uid;
+
+      const firebaseUser = await getUser({ id });
+      setNumProductOnCarts(firebaseUser?.carts?.length || 0);
+      const firebaseLists = firebaseUser?.favorites || [];
+      const localLists = JSON.parse(
+        localStorage.getItem("favoriteList") || "[]",
+      );
+      const MAX_LISTS = 10;
+      const availableSlots = MAX_LISTS - firebaseLists.length;
+      if (availableSlots <= 0) {
+        // toast.info(`You have reached the maximum number of favorite lists.`);
+        window.localStorage.removeItem("favoriteList");
+        return;
+      }
+
+      const listsToTake = localLists.slice(0, availableSlots);
+
+      await mergeFavorites({
+        uid: id as string,
+        localFavorites: [...listsToTake],
+      });
+
+      if (firebaseLists.length + localLists.length > 10) {
+        const notMerged = localLists.slice(10 - firebaseLists.length);
+        setNotMergedList(notMerged);
+      }
+      // if (localLists.length > 0) {
+      //   toast.success(
+      //     "You are now logged in! Lists saved to favourites before login have been added to your account.",
+      //   );
+      // }
+      window.localStorage.removeItem("favoriteList");
     } catch (error) {
       console.error("Login failed:", error);
     }
@@ -128,8 +165,6 @@ function StickyHeaderChild() {
   useEffect(() => {
     reset();
   }, [showInfo, reset]);
-  //////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////
 
   if (pathname.includes("/admin")) return null;
   return (
@@ -169,7 +204,7 @@ function StickyHeaderChild() {
           </Link>
           <div
             className={`cursor-pointer ${user ? "" : "rounded-full p-2.5 hover:bg-gray-200"}`}
-            onClick={() => setShowInfo(true)}
+            onClick={() => setShowInfo("true")}
           >
             {user ? (
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white hover:bg-black/80">
@@ -185,7 +220,13 @@ function StickyHeaderChild() {
           >
             <Heart size={22} strokeWidth={2.5} />
           </Link>
-          <div className="cursor-pointer rounded-full p-2.5 hover:bg-gray-200">
+          <Link
+            href={`/cart`}
+            className="relative cursor-pointer rounded-full p-2.5 hover:bg-gray-200"
+          >
+            <div className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#004f93] text-center text-xs text-white">
+              <span>{numProductOnCarts}</span>
+            </div>
             <svg viewBox="0 0 25 25" width="28" height="28" strokeWidth="0.5">
               <path
                 fillOpacity="0.8"
@@ -194,26 +235,18 @@ function StickyHeaderChild() {
                 d="M11.9997 4c1.7048 0 2.9806 1.122 3.4578 2.7127.3246 1.0819.5718 2.1886.8335 3.2873h6.1517l-3.75 10H5.3067l-3.75-10h6.1516c.2617-1.0987.509-2.2054.8335-3.2873C9.019 5.122 10.2948 4 11.9997 4zm2.2348 6H9.7648c.2293-.9532.5299-2.1701.6927-2.7127C10.6838 6.533 11.1739 6 11.9997 6s1.3158.533 1.5421 1.2873c.1628.5426.4634 1.7595.6927 2.7127zm-9.7918 2 2.25 6h10.614l2.25-6h-3.3252c-.6633 2.1065-1.7665 4-4.2318 4-2.4654 0-3.5686-1.8935-4.2319-4h-3.325zm5.4308 0c.3635 1.0612.8841 2 2.1262 2 1.242 0 1.7626-.9388 2.1261-2H9.8735z"
               ></path>
             </svg>
-          </div>
+          </Link>
         </div>
       </nav>
       {/* show login */}
-      <div
-        className={`fixed top-0 left-0 z-200 h-screen w-screen bg-black/30 transition duration-200 ${showInfo ? "" : "pointer-events-none"}`}
-        style={{
-          opacity: showInfo ? "1" : "0",
-        }}
-        onClick={() => {
-          setShowInfo(false);
-        }}
-      >
+      <FavoritesSidebar showInfo={showInfo} setShowInfo={setShowInfo}>
         <div
           onClick={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-[-15px] h-screen w-1/3 overflow-y-auto rounded-l-lg border border-black/30 bg-white p-12 pt-24 pb-12 transition duration-200 [scrollbar-gutter:stable] ${showInfo ? "translate-x-0" : "translate-x-full"}`}
+          className={`fixed top-0 right-[-15px] h-screen w-[460px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-8 pt-24 pb-12 transition duration-200 [scrollbar-gutter:stable] ${showInfo ? "translate-x-0" : "translate-x-full"}`}
         >
           <button
             onClick={() => {
-              setShowInfo(false);
+              setShowInfo("");
             }}
             className={`absolute top-5 right-5 cursor-pointer`}
           >
@@ -241,92 +274,133 @@ function StickyHeaderChild() {
               </button>
             </div>
           ) : (
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="flex flex-col gap-4"
-            >
-              <h1 className="text-1xl mb-4 font-bold">
-                Log in to your account
-              </h1>
-              <p className="text-muted-foreground mb-2 text-[15px]">
-                Get a more personalised experience where you don`t need to fill
-                in your information every time
-              </p>
-              <div>
-                <label
-                  htmlFor="email"
-                  className="text-muted-foreground text-md font-normal"
-                >
-                  Email
-                </label>
-                <Input
-                  {...register("email")}
-                  id="email"
-                  type="email"
-                  className="py-6"
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-600">{errors.email.message}</p>
-                )}
-              </div>
-              <div>
-                <label
-                  htmlFor="password"
-                  className="text-muted-foreground text-md font-normal"
-                >
-                  Password
-                </label>
-                <Input
-                  {...register("password")}
-                  id="password"
-                  type="password"
-                  className="py-6"
-                />
-                {errors.password && (
-                  <p className="text-sm text-red-600">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
-              <Link
-                href="/reset-password"
-                className="text-muted-foreground block underline"
+            <>
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="flex flex-col gap-4"
               >
-                Forgot your password?
-              </Link>
-              <Button
-                disabled={isSubmitting}
-                className="mt-10 w-full cursor-pointer rounded-full p-6 disabled:bg-gray-950"
-              >
-                Log in
-              </Button>
+                <h1 className="text-1xl mb-4 font-bold">
+                  Log in to your account
+                </h1>
+                <p className="text-muted-foreground mb-2 text-[15px]">
+                  Get a more personalised experience where you don`t need to
+                  fill in your information every time
+                </p>
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="text-muted-foreground text-md font-normal"
+                  >
+                    Email
+                  </label>
+                  <Input
+                    {...register("email")}
+                    id="email"
+                    type="email"
+                    className="py-6"
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-red-600">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="text-muted-foreground text-md font-normal"
+                  >
+                    Password
+                  </label>
+                  <Input
+                    {...register("password")}
+                    id="password"
+                    type="password"
+                    className="py-6"
+                  />
+                  {errors.password && (
+                    <p className="text-sm text-red-600">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
+                <Link
+                  href="/reset-password"
+                  className="text-muted-foreground block underline"
+                >
+                  Forgot your password?
+                </Link>
+                <Button
+                  disabled={isSubmitting}
+                  className="mt-10 w-full cursor-pointer rounded-full p-6 disabled:bg-gray-950"
+                >
+                  Log in
+                </Button>
+              </form>
               <Button
                 onClick={handleLogin}
                 disabled={isLoading}
-                className="w-full cursor-pointer rounded-full p-6 disabled:bg-gray-950"
+                className="mt-4 w-full cursor-pointer rounded-full p-6 disabled:bg-gray-950"
               >
-                {/* <PulseLoader color="#fff" size={8} loading={true} className={``} /> */}
                 <FcGoogle size={25} />
                 <span>Sign in with Google</span>
               </Button>
-              <p className="text-muted-foreground after:content-[' '] before:content-[' '] relative my-6 text-center text-sm before:absolute before:top-1/2 before:left-0 before:h-[1px] before:w-[38%] before:bg-black/30 after:absolute after:top-1/2 after:right-0 after:h-[1px] after:w-[38%] after:bg-black/30">
+              <p className="text-muted-foreground after:content-[' '] before:content-[' '] relative my-10 text-center text-sm before:absolute before:top-1/2 before:left-0 before:h-[1px] before:w-[38%] before:bg-black/30 after:absolute after:top-1/2 after:right-0 after:h-[1px] after:w-[38%] after:bg-black/30">
                 New at IKEAN?
               </p>
               <Button
                 variant={"border"}
                 className="w-full cursor-pointer rounded-full p-6"
               >
-                <Link href={"/sign-up"} onClick={() => setShowInfo(false)}>
+                <Link href={"/sign-up"} onClick={() => setShowInfo("")}>
                   Create account
                 </Link>
               </Button>
-            </form>
+            </>
           )}
         </div>
-      </div>
+      </FavoritesSidebar>
+      {pathname.endsWith("favorites") && (
+        <div
+          className={`fixed top-0 left-0 z-200 h-screen w-screen bg-black/30 transition duration-200 ${notMergedList ? "" : "pointer-events-none"}`}
+          style={{
+            opacity: notMergedList ? "1" : "0",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className={`fixed top-1/2 right-1/2 w-[500px] translate-x-1/2 -translate-y-1/2 rounded-xl border border-black/30 bg-white p-10 transition duration-200 [scrollbar-gutter:stable] ${notMergedList ? "scale-100" : "scale-80"} flex flex-col justify-evenly`}
+          >
+            <div
+              className="flex justify-end"
+              onClick={() => setNotMergedList(null)}
+            >
+              <X size={22} className="cursor-pointer" />
+            </div>
+            <h1 className="my-6 text-2xl">Maximum favorites lists reached</h1>
+            <p className="text-[15px] text-[#737373]">
+              You&apos;ve reached the maximum number of favorite lists allowed
+              Due to the limit, some lists created before login couldn&apos;t be
+              saved to your account.
+            </p>
+            <p className="mt-6 font-semibold">
+              These exceeded lists have been removed:
+            </p>
+            <ul className="ms-8 mt-2 space-y-1 text-sm font-semibold text-[#737373] [&>li]:list-disc">
+              {notMergedList?.map((list) => (
+                <li key={list.id}>{list.listName}</li>
+              ))}
+            </ul>
+            <Button
+              variant={"default"}
+              className="mt-6 rounded-full py-6 font-bold"
+              onClick={() => setNotMergedList(null)}
+            >
+              Okay, got it!
+            </Button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
-
-// 0058A3
-// 004F93 (hover)

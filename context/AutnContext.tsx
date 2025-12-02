@@ -12,7 +12,7 @@ import {
 
 export interface AuthContextType {
   user: User | null;
-  isLoading: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,12 +23,12 @@ interface AuthProviderProps {
 
 export default function AuthContextProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
-      setIsLoading(false); // ✅ stop loading when auth is ready
+      setLoading(false); // ✅ stop loading when auth is ready
     });
 
     return () => unsubscribe();
@@ -38,7 +38,7 @@ export default function AuthContextProvider({ children }: AuthProviderProps) {
     <AuthContext.Provider
       value={{
         user,
-        isLoading,
+        loading,
       }}
     >
       {children}

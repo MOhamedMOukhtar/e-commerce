@@ -67,7 +67,7 @@ function DifferentStudyTypes() {
                 alt={section.title}
                 width={400}
                 height={400}
-                className="mb-8 aspect-[1/1.3] w-full cursor-pointer object-cover"
+                className="mb-8 aspect-[1/1.3] w-full object-cover"
               />
               <Link
                 href={section.href}

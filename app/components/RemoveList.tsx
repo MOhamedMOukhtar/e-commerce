@@ -21,7 +21,6 @@ function RemoveList({
   async function fetchProducts() {
     if (fav.list.length >= 1) {
       const product = await getProduct({ id: fav.list[0].id });
-      console.log(product);
       setProduct(product as TProduct);
     } else {
       setProduct(null);

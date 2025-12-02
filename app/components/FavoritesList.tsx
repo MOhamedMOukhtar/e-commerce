@@ -3,6 +3,7 @@ import { TFavorites } from "../favorites/page";
 import { getProduct } from "@/lib/firestore/products/read_server";
 import { TProduct } from "@/types/product/product";
 import Image from "next/image";
+import { Skeleton } from "@mui/material";
 
 function FavoritesList({
   fav,
@@ -18,6 +19,7 @@ function FavoritesList({
   handleMoveOneItem?: (tragetListId: string) => Promise<void>;
 }) {
   const [product, setProduct] = useState<TProduct | null>(null);
+
   useEffect(() => {
     async function fetchProducts() {
       if (fav.list.length >= 1) {

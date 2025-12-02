@@ -1,10 +1,14 @@
 import ProductCardLarge from "@/app/components/ProductCardLarge";
+import { TFavorites } from "@/app/favorites/page";
 import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/firebase";
 import { getCollection } from "@/lib/firestore/collection/read_server";
 import { getProduct } from "@/lib/firestore/products/read_server";
+import { getUser } from "@/lib/firestore/user/read_server";
 import { TCollection } from "@/types/collection/collection";
 import { TProduct } from "@/types/product/product";
-import { useEffect, useState } from "react";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { useCallback, useEffect, useState } from "react";
 
 function FlexibleRockingChair() {
   const [products, setProducts] = useState<TProduct[]>([]);
@@ -12,6 +16,39 @@ function FlexibleRockingChair() {
   const [commonProducts, setCommonProducts] = useState<TProduct[]>([]);
   const [filterProducts, setFilterProducts] = useState<TProduct[]>([]);
   const [productId, setProductId] = useState<string[]>([]);
+  const [favoritesLists, setFavoritesLists] = useState<TFavorites[]>([]);
+  const [favoriteList, setFavoriteList] = useState<
+    { id: string; quantity: number }[]
+  >([]);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const fetchUser = useCallback(async () => {
+    try {
+      if (!user?.uid) return;
+      const userRef = await getUser({ id: user.uid });
+      if (!userRef) return;
+      if (!userRef.favorites) return;
+      setFavoritesLists(userRef.favorites);
+      setFavoriteList(() =>
+        userRef.favorites?.map((list: TFavorites) => list.list).flat(),
+      );
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    fetchUser();
+  }, [user?.uid, fetchUser]);
 
   useEffect(() => {
     async function fetch() {
@@ -69,6 +106,9 @@ function FlexibleRockingChair() {
             product={product}
             key={product?.id}
             commonProducts={commonProducts}
+            fetchUser={fetchUser}
+            favoriteList={favoriteList}
+            favoritesLists={favoritesLists}
           />
         ))}
       </div>

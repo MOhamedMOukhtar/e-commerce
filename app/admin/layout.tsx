@@ -14,7 +14,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 }
 
 function AdminChecking({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth();
+  const { user, loading: isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {

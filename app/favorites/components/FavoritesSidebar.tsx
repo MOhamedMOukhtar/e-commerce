@@ -11,12 +11,14 @@ function FavoritesSidebar({
   changeName,
   setChangeName,
   children,
+  onClick,
 }: {
   showInfo?: string;
   setShowInfo?: React.Dispatch<React.SetStateAction<string>>;
   changeName?: boolean;
   setChangeName?: React.Dispatch<React.SetStateAction<boolean>>;
   children: React.ReactNode;
+  onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }) {
   return (
     <div
@@ -75,6 +77,7 @@ function FavoritesSidebar({
       //     if (setChangeName) setChangeName(false);
       //   }
       // }}
+      onClick={onClick}
     >
       {children}
     </div>

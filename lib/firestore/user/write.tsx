@@ -98,6 +98,28 @@ export async function addProductToList({
   return favorites[targetIndex].listName;
 }
 
+//merge favorites and local storage
+export async function mergeFavorites({
+  uid,
+  localFavorites,
+}: {
+  uid: string;
+  localFavorites: TFavorites[];
+}) {
+  const userRef = doc(db, `users/${uid}`);
+  const userSnap = await getDoc(userRef);
+  if (!userSnap.exists()) throw new Error("User not found");
+
+  const userData = userSnap.data();
+  const favorites = userData.favorites || [];
+
+  const updatedFavorites = [...favorites, ...localFavorites];
+
+  await updateDoc(userRef, { favorites: updatedFavorites });
+  // console.log("✅ Favorites merged successfully");
+}
+
+// update favorites
 export async function updateFavorites({
   uid,
   list,
@@ -397,14 +419,45 @@ export async function moveOneProduct({
   console.log("✅ Item moved successfully");
 }
 
-// export async function updateCarts({ uid, list }) {
-//   await setDoc(
-//     doc(db, `users/${uid}`),
-//     {
-//       carts: list,
-//     },
-//     {
-//       merge: true,
-//     },
-//   );
-// }
+////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+export async function updateCarts({
+  uid,
+  productId,
+}: {
+  uid: string;
+  productId: string;
+}) {
+  const userRef = doc(db, `users/${uid}`);
+  const userSnap = await getDoc(userRef);
+  const user = userSnap.data();
+
+  if (!user) return;
+
+  // carts = [{ id, quantity }]
+  const carts = user.carts ?? [];
+
+  // find product
+  const existing = carts.find(
+    (item: { id: string; quantity: number }) => item.id === productId,
+  );
+
+  let updatedCarts;
+
+  if (existing) {
+    // product exists → increase quantity
+    updatedCarts = carts.map((item: { id: string; quantity: number }) =>
+      item.id === productId ? { ...item, quantity: item.quantity + 1 } : item,
+    );
+  } else {
+    // product doesn't exist → add it
+    updatedCarts = [...carts, { id: productId, quantity: 1 }];
+  }
+
+  // update Firestore
+  await updateDoc(userRef, { carts: updatedCarts });
+
+  return updatedCarts;
+}

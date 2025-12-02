@@ -47,10 +47,7 @@ function ShopByPrice() {
         <h2 className="mb-10 text-2xl">Shop by Price</h2>
         <CustomScrollSec>
           {sections.map((section) => (
-            <div
-              key={section.title}
-              className="relative min-w-[235px] cursor-pointer"
-            >
+            <div key={section.title} className="relative min-w-[235px]">
               <Image
                 src={section.img}
                 alt={section.title}

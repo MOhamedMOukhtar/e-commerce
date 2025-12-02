@@ -44,11 +44,7 @@ function StorageSections() {
         <h2 className="mb-10 text-2xl">Shop by Types</h2>
         <CustomScrollSec>
           {sections.map((section) => (
-            <Link
-              href={`${section.href}`}
-              key={section.title}
-              className="relative min-w-[235px] cursor-pointer"
-            >
+            <div key={section.title} className="relative min-w-[235px]">
               <Image
                 src={section.img}
                 alt={section.title}
@@ -56,10 +52,13 @@ function StorageSections() {
                 height={400}
                 className="mb-8 aspect-[1/1.3] w-full object-cover"
               />
-              <button className="absolute bottom-14 left-1/2 -translate-x-1/2 cursor-pointer rounded-full bg-white px-4 py-2 text-xs font-semibold text-nowrap">
+              <Link
+                href={section.href}
+                className="absolute bottom-14 left-1/2 -translate-x-1/2 cursor-pointer rounded-full bg-white px-4 py-2 text-xs font-semibold text-nowrap hover:bg-[#e2e2e2]"
+              >
                 {section.title}
-              </button>
-            </Link>
+              </Link>
+            </div>
           ))}
         </CustomScrollSec>
       </div>

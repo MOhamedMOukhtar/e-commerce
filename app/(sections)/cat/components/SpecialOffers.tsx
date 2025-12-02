@@ -2,15 +2,17 @@
 
 import CustomScrollSec from "@/app/components/CustomScrollSec";
 import ProductCardLarge from "@/app/components/ProductCardLarge";
+import { TFavorites } from "@/app/favorites/page";
 
 import { Button } from "@/components/ui/button";
-import AuthContextProvider from "@/context/AutnContext";
+import AuthContextProvider, { useAuth } from "@/context/AutnContext";
 import { getSpecialOffers } from "@/lib/firestore/special-offers/read_server";
+import { getUser } from "@/lib/firestore/user/read_server";
 import { TProduct } from "@/types/product/product";
 import { ArrowDownRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 const sections = [
   {
@@ -78,6 +80,31 @@ function SpecialOffersChild() {
   const [visibleCount, setVisibleCount] = useState(16);
   const [commonProducts, setCommonProducts] = useState<TProduct[]>([]);
   const [filterProducts, setFilterProducts] = useState<TProduct[]>([]);
+  const [favoritesLists, setFavoritesLists] = useState<TFavorites[]>([]);
+  const [favoriteList, setFavoriteList] = useState<
+    { id: string; quantity: number }[]
+  >([]);
+  const { user } = useAuth();
+
+  const fetchUser = useCallback(async () => {
+    try {
+      if (!user?.uid) return;
+      const userRef = await getUser({ id: user.uid });
+      if (!userRef) return;
+      if (!userRef.favorites) return;
+      setFavoritesLists(userRef.favorites);
+      setFavoriteList(() =>
+        userRef.favorites?.map((list: TFavorites) => list.list).flat(),
+      );
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    fetchUser();
+  }, [user?.uid, fetchUser]);
 
   useEffect(() => {
     const fetchSpecialOffers = async () => {
@@ -126,10 +153,7 @@ function SpecialOffersChild() {
           </h2>
           <CustomScrollSec>
             {sections.map((section) => (
-              <div
-                key={section.title}
-                className="relative min-w-[235px] cursor-pointer"
-              >
+              <div key={section.title} className="relative min-w-[235px]">
                 <Image
                   src={section.img}
                   alt={section.title}
@@ -139,7 +163,7 @@ function SpecialOffersChild() {
                 />
                 <Link
                   href={`/cat/${section.href}`}
-                  className="absolute bottom-14 left-1/2 -translate-x-1/2 cursor-pointer rounded-full bg-white px-4 py-2 text-xs font-semibold text-nowrap hover:bg-gray-100"
+                  className="absolute bottom-14 left-1/2 -translate-x-1/2 cursor-pointer rounded-full bg-white px-4 py-2 text-xs font-semibold text-nowrap hover:bg-[#e6e6e6]"
                 >
                   {section.title}
                 </Link>
@@ -157,6 +181,9 @@ function SpecialOffersChild() {
             product={product}
             key={product?.id}
             commonProducts={commonProducts}
+            fetchUser={fetchUser}
+            favoriteList={favoriteList}
+            favoritesLists={favoritesLists}
           />
         ))}
       </div>

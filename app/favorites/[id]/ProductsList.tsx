@@ -11,9 +11,11 @@ import {
   PenLine,
   Plus,
   Trash2,
+  TriangleAlert,
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { v4 as uuidv4 } from "uuid";
 import React, { useEffect, useState } from "react";
 import { formatEGP } from "@/lib/helper/formatMoney";
 import { TFavorites } from "../page";
@@ -44,7 +46,7 @@ export default function ProductsList({
   userId,
   listId,
 }: {
-  userId: string;
+  userId: string | null;
   listId: string;
 }) {
   const [user, setUser] = useState<TUser | null>(null);
@@ -57,12 +59,82 @@ export default function ProductsList({
     list: [],
   });
 
+  useEffect(() => {
+    if (userId) return;
+    const localFavorites = JSON.parse(
+      localStorage.getItem("favoriteList") as string,
+    );
+
+    const targetList = localFavorites.find(
+      (list: TFavorites) => list.id === listId,
+    );
+
+    if (targetList) {
+      setFavoriteList(targetList);
+    }
+
+    if (targetList.list.length === 0) {
+      setTotalPrice(0);
+      setFetchProduct(true); // mark fetch complete
+      return;
+    }
+
+    async function fetchProduct() {
+      const results = await Promise.all(
+        targetList.list.map(async (item: { id: string; quantity: number }) => {
+          const product = (await getProduct({ id: item.id })) as TProductEdit;
+          return { ...product, quantity: item.quantity };
+        }),
+      );
+
+      setProducts(results);
+
+      let total = 0;
+      results.forEach((product) => {
+        total += (product.salePrice || product.price) * product.quantity;
+      });
+
+      setTotalPrice(total);
+      setFetchProduct(true);
+    }
+
+    fetchProduct();
+  }, []);
+
   async function fetchUserAndProducts() {
+    if (!userId) {
+      const localFavorites: TFavorites[] = JSON.parse(
+        localStorage.getItem("favoriteList") as string,
+      );
+
+      const favouriteList = localFavorites.find((list) => list.id === listId);
+      if (!favouriteList) return;
+
+      const results = await Promise.all(
+        favouriteList.list.map(async (item) => {
+          const product = (await getProduct({ id: item.id })) as TProductEdit;
+          return { ...product, quantity: item.quantity };
+        }),
+      );
+
+      setProducts(results);
+
+      console.log(results);
+
+      let total = 0;
+      results.forEach((product) => {
+        total += (product.salePrice || product.price) * product.quantity;
+      });
+
+      setTotalPrice(total);
+      setFetchProduct(true);
+      return;
+    }
     try {
       const user = (await getUser({ id: userId })) as TUser;
       setUser(user);
 
-      const favouriteList = user.favorites.find((list) => list.id === listId);
+      const favouriteList = user?.favorites.find((list) => list.id === listId);
       if (!favouriteList) return;
 
       setFavoriteList(favouriteList);
@@ -119,7 +191,7 @@ export default function ProductsList({
             </div>
 
             <div className="flex items-center gap-5 border-b border-black/20 pb-3 font-semibold">
-              <span>Buy online</span>
+              <span>Buy online </span>
               <Skeleton variant="rectangular" height={18} width={80} />
             </div>
             <div className={`flex flex-col`}>
@@ -217,6 +289,7 @@ export default function ProductsList({
         userId={userId}
         listId={listId}
         favoriteList={favoriteList}
+        setFavoriteList={setFavoriteList}
         fetchUser={fetchUserAndProducts}
         user={user}
         totalPrice={totalPrice}
@@ -230,14 +303,16 @@ function ProductsListChild({
   userId,
   listId,
   favoriteList,
+  setFavoriteList,
   fetchUser,
   user,
   totalPrice,
   products,
 }: {
-  userId: string;
+  userId: string | null;
   listId: string;
   favoriteList: TFavorites;
+  setFavoriteList: React.Dispatch<React.SetStateAction<TFavorites>>;
   fetchUser: () => Promise<void>;
   user: TUser | null;
   totalPrice: number;
@@ -249,6 +324,12 @@ function ProductsListChild({
   const [confirm, setConfirm] = useState<boolean>(false);
   const [listName, setListName] = useState<string>("");
   const [btnLoading, setBtnLoading] = useState<boolean>(false);
+  // const [isLoading, setIsLoading] = useState<boolean>(false);
+  // const [favorites, setFavorites] = useState<TFavorites[]>([]);
+
+  const localFavorites: TFavorites[] = JSON.parse(
+    window.localStorage.getItem("favoriteList") || "[]",
+  );
 
   const router = useRouter();
 
@@ -258,6 +339,27 @@ function ProductsListChild({
 
   async function handleChangeListName() {
     setBtnLoading(true);
+    if (!userId) {
+      const localLists = window.localStorage.getItem("favoriteList");
+      let localListsArray: TFavorites[] = [];
+      if (localLists) {
+        localListsArray = JSON.parse(localLists);
+      }
+      const newList = localListsArray.map((list) => {
+        if (list.id === favoriteList.id) {
+          setFavoriteList((prev) => ({ ...prev, listName }));
+          return { ...list, listName };
+        }
+        return list;
+      });
+      window.localStorage.setItem("favoriteList", JSON.stringify(newList));
+      setBtnLoading(false);
+      setShowInfo("");
+      setChangeName(false);
+      toast.success(`Your list name was changed to ${listName}`);
+      return;
+    }
+
     await updateListName(userId, listId, listName);
     await fetchUser();
     setBtnLoading(false);
@@ -268,6 +370,51 @@ function ProductsListChild({
 
   // move all items from one list to another
   async function handleMoveAllItems(targetList: string) {
+    if (!userId) {
+      const localLists = JSON.parse(
+        window.localStorage.getItem("favoriteList") as string,
+      );
+      let localListsArray: TFavorites[] = [];
+      if (localLists) {
+        localListsArray = localLists;
+      }
+      const fromIndex = localListsArray.findIndex(
+        (f: TFavorites) => f.id === listId,
+      );
+      const toIndex = localListsArray.findIndex(
+        (f: TFavorites) => f.id === targetList,
+      );
+      if (fromIndex === -1 || toIndex === -1)
+        return console.error("List not found");
+
+      const fromList = localListsArray[fromIndex].list || [];
+      const toList = localListsArray[toIndex].list || [];
+
+      // Merge quantities
+      const mergedList = [...toList];
+      for (const item of fromList) {
+        const existing = mergedList.find((i) => i.id === item.id);
+        if (existing) existing.quantity += item.quantity;
+        else mergedList.push(item);
+      }
+
+      const updatedFavorites = [...localListsArray];
+      updatedFavorites[toIndex].list = mergedList;
+      updatedFavorites[fromIndex].list = [];
+
+      window.localStorage.setItem(
+        "favoriteList",
+        JSON.stringify(updatedFavorites),
+      );
+
+      // setFavorites(updatedFavorites);
+
+      setFavoriteList((prev) => ({ ...prev, list: [] }));
+      setShowInfo("");
+
+      toast.success("All items moved successfully");
+      return;
+    }
     setBtnLoading(true);
     await moveAllItems({
       uid: userId,
@@ -286,12 +433,33 @@ function ProductsListChild({
 
   // remove list
   async function handleRemove() {
+    if (!userId) {
+      handleRemoveFromLocalStorage(listId);
+      router.push("/favorites");
+      // setConfirm(false);
+      // setShowInfo("");
+      toast.success(`Your list was removed successfully`);
+      return;
+    }
+
     setBtnLoading(true);
     await deleteFavoriteList({ uid: userId, listId });
     setBtnLoading(false);
     router.push("/favorites");
     setConfirm(false);
     setShowInfo("");
+  }
+
+  // handle remove from local storage
+  function handleRemoveFromLocalStorage(listId: string) {
+    if (typeof window === "undefined") return;
+    const favoriteLists = window.localStorage.getItem("favoriteList");
+    let favoriteListsArray: TFavorites[] = [];
+    if (favoriteLists) {
+      favoriteListsArray = JSON.parse(favoriteLists);
+    }
+    const newList = favoriteListsArray.filter((list) => list.id !== listId);
+    window.localStorage.setItem("favoriteList", JSON.stringify(newList));
   }
 
   // disable scroll when showInfo is true
@@ -306,7 +474,39 @@ function ProductsListChild({
     }
   }, [showInfo, user]);
 
-  // if (!user) return <p>Loading...</p>;
+  function handleCreateList(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user) {
+      if (typeof window === "undefined") return;
+
+      const newList = {
+        id: uuidv4(),
+        listName,
+        list: [],
+      };
+
+      const favoriteLists = window.localStorage.getItem("favoriteList");
+      let favoriteListsArray: TFavorites[] = [];
+
+      if (favoriteLists) {
+        favoriteListsArray = JSON.parse(favoriteLists);
+      }
+
+      favoriteListsArray.push(newList);
+
+      window.localStorage.setItem(
+        "favoriteList",
+        JSON.stringify(favoriteListsArray),
+      );
+
+      setCreateList("");
+      setShowInfo("moveAll");
+
+      // toast.success(`"${listName}" has been created`);
+
+      return;
+    }
+  }
 
   return (
     <div className="mt-10 flex gap-25">
@@ -345,7 +545,8 @@ function ProductsListChild({
                   userId={userId}
                   favouriteId={favoriteList.id}
                   fetchUser={fetchUser}
-                  favoriteList={favoriteList.list}
+                  objectList={favoriteList.list}
+                  setFavoriteList={setFavoriteList}
                 />
               ))}
             </div>
@@ -387,7 +588,7 @@ function ProductsListChild({
       <FavoritesSidebar setShowInfo={setShowInfo} showInfo={showInfo}>
         <div
           onClick={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-[-15px] h-screen w-[480px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-9 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "settings" ? "translate-x-0" : "translate-x-full"}`}
+          className={`fixed top-0 right-[-15px] h-screen w-[460px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-9 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "settings" ? "translate-x-0" : "translate-x-full"}`}
         >
           <div className="absolute top-5 left-0 flex w-full items-center justify-between px-5">
             <h3 className="m-auto self-center">{favoriteList.listName}</h3>
@@ -401,18 +602,21 @@ function ProductsListChild({
             </button>
           </div>
           <div className="flex h-full flex-col text-[15px] [&>div]:flex [&>div]:items-center [&>div]:gap-2 [&>div]:border-b [&>div]:border-black/10 [&>div]:py-7">
-            <div
-              className="cursor-pointer font-semibold hover:underline"
-              onClick={() => {
-                setShowInfo("moveAll");
-              }}
-            >
-              <ArrowRight size={20} /> Move all items to another list
-            </div>
+            {favoriteList.list.length >= 1 && (
+              <div
+                className="cursor-pointer font-semibold hover:underline"
+                onClick={() => {
+                  setShowInfo("moveAll");
+                }}
+              >
+                <ArrowRight size={20} /> Move all items to another list
+              </div>
+            )}
 
             <div
               className="cursor-pointer font-semibold hover:underline"
               onClick={() => {
+                setListName(favoriteList.listName);
                 setChangeName(true);
                 setCreateList("");
               }}
@@ -438,9 +642,9 @@ function ProductsListChild({
         </div>
         <div
           onClick={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-[-15px] h-screen w-[480px] overflow-y-auto rounded-l-lg border border-black/30 bg-white px-9 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "moveAll" ? "translate-x-0" : "translate-x-full"}`}
+          className={`fixed top-0 right-[-15px] h-screen w-[460px] overflow-y-auto rounded-l-lg border border-black/30 bg-white transition duration-200 [scrollbar-gutter:stable] ${showInfo === "moveAll" ? "translate-x-0" : "translate-x-full"} flex flex-col ps-6 pt-6`}
         >
-          <div className="absolute top-5 left-0 flex w-full items-center justify-between px-5">
+          <div className="flex items-center justify-between pe-5">
             <button
               onClick={() => setShowInfo("settings")}
               className="cursor-pointer"
@@ -457,10 +661,10 @@ function ProductsListChild({
               <X size={20} opacity={0.6} strokeWidth={3} />
             </button>
           </div>
-          <div className="flex h-full flex-col">
+          <div className="mt-10 flex flex-1 flex-col overflow-y-auto pr-6">
             <h2>Which list should we move all items to?</h2>
             <div className="mt-10 flex flex-col gap-5">
-              {user?.favorites
+              {(user ? user.favorites : localFavorites)
                 ?.slice()
                 .reverse()
                 .filter((favorite) => favorite.id !== listId)
@@ -473,37 +677,158 @@ function ProductsListChild({
                   />
                 ))}
             </div>
-            {user && user.favorites.length === 10 ? null : (
-              <Button
-                variant={"border"}
-                className="mt-auto w-full rounded-full py-6"
-                onClick={() => {
-                  setShowInfo("create");
-                  setListName("");
-                }}
-                disabled={btnLoading}
-              >
-                <svg
-                  viewBox="0 0 22 22"
-                  focusable="false"
-                  width="20"
-                  height="20"
-                  aria-hidden="true"
-                >
-                  <path d="M20 2H4v20h10v-2H6V4h12v8h2V2z"></path>
-                  <path d="M18 14v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2zM8 6h8v2H8V6zm5 4H8v2h5v-2z"></path>
-                </svg>
-                Create new list
-              </Button>
-            )}
           </div>
+          {user && user.favorites.length === 10 ? null : (
+            <>
+              {user ? (
+                user.favorites.length === 10
+              ) : localFavorites.length === 10 ? (
+                <div className="-ml-6 rounded-[4px] border-l-4 border-[#f26a2f] shadow-[3px_8px_10px_rgba(0,0,0,0.08)]">
+                  <div className="flex gap-3 p-4">
+                    <TriangleAlert color="#f26a2f" className="shrink-0" />
+                    <div>
+                      <p className="mb-1 font-semibold">List limit reached</p>
+                      <p className="text-sm text-gray-600">
+                        Please remove one favourite list to be able to add more
+                        lists. The number of products within each list is not
+                        affected by this limit, so you can still add to or edit
+                        the existing ones.
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href={"/favorites"}
+                    className="float-right me-4 cursor-pointer rounded-full px-4 py-1 text-sm font-semibold hover:bg-[#dfdfdf]"
+                  >
+                    Go to favorites
+                  </Link>
+                </div>
+              ) : (
+                <Button
+                  variant={"border"}
+                  className="my-6 me-6 rounded-full py-6"
+                  onClick={() => {
+                    setShowInfo("create");
+                    setListName("");
+                  }}
+                >
+                  <svg
+                    viewBox="0 0 22 22"
+                    focusable="false"
+                    width="20"
+                    height="20"
+                    aria-hidden="true"
+                  >
+                    <path d="M20 2H4v20h10v-2H6V4h12v8h2V2z"></path>
+                    <path d="M18 14v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2zM8 6h8v2H8V6zm5 4H8v2h5v-2z"></path>
+                  </svg>
+                  Create new list
+                </Button>
+              )}
+            </>
+          )}
         </div>
-      </FavoritesSidebar>
-      {/* change name */}
-      <FavoritesSidebar setChangeName={setChangeName} changeName={changeName}>
+        {/* create new list */}
         <div
           onClick={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-[-15px] h-screen w-[480px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-9 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${changeName ? "translate-x-0" : "translate-x-full"} `}
+          className={`fixed top-0 right-0 h-screen w-[460px] overflow-y-auto rounded-l-lg border border-black/30 bg-white transition duration-200 [scrollbar-gutter:stable] ${showInfo === "create" ? "translate-x-0" : "translate-x-full"} flex flex-col py-6 ps-6`}
+        >
+          <div className="flex items-center justify-between pe-1">
+            <button
+              onClick={() => setShowInfo("moveAll")}
+              className="cursor-pointer"
+            >
+              <ArrowLeft size={20} opacity={0.6} strokeWidth={3} />
+            </button>
+            <h3>Create a new list</h3>
+            <button
+              onClick={() => {
+                setShowInfo("");
+                // setIsLoading(false);
+              }}
+              className="cursor-pointer"
+            >
+              <X size={20} opacity={0.6} strokeWidth={3} />
+            </button>
+          </div>
+          <form onSubmit={handleCreateList} className="flex h-full flex-col">
+            <h4 className="text-md text-muted-foreground py-10">
+              Why not name it after a room, theme, or project you have in mind?
+            </h4>
+            <label
+              htmlFor="name"
+              className="text-muted-foreground text-md pb-1 font-normal"
+            >
+              List name
+            </label>
+            <Input
+              id="name"
+              type="text"
+              className={`rounded-sm py-6 ${listName.length > 50 && "border-[#e00751] focus-visible:ring-[#e00751]"}`}
+              value={listName}
+              onChange={(e) => {
+                setListName(e.target.value);
+                if (e.target.value.trim() && createList === "empty")
+                  setCreateList("fine");
+                if (!e.target.value.trim() && createList === "fine")
+                  setCreateList("empty");
+              }}
+              onBlur={() => {
+                if (!listName.trim() && createList === "") {
+                  setCreateList("empty");
+                }
+              }}
+              disabled={btnLoading}
+            />
+            <div className="flex justify-between pt-1">
+              {listName.length > 50 && (
+                <p className="flex items-center justify-center gap-1 text-[13px] text-[#e00751]">
+                  <CircleAlert
+                    fill="#e00751"
+                    className="relative top-[1px]"
+                    size={20}
+                    color="#fff"
+                  />
+                  The name of your list is too long
+                </p>
+              )}
+              {createList === "empty" && (
+                <p className="flex items-center justify-center gap-1 text-[13px] text-[#e00751]">
+                  <CircleAlert
+                    fill="#e00751"
+                    className="relative top-[1px]"
+                    size={20}
+                    color="#fff"
+                  />
+                  Your list needs a name
+                </p>
+              )}
+              {createList === "fine" && listName.length <= 50 ? (
+                <p className="flex items-center justify-center gap-1 text-[13px] text-[#e00751]">
+                  <CircleCheck fill="green" size={20} color="#fff" />
+                </p>
+              ) : (
+                <p></p>
+              )}
+              <span
+                className={`text-[13px] ${listName.length > 50 ? "text-[#e00751]" : "text-muted-foreground"}`}
+              >
+                {listName.length}/50
+              </span>
+            </div>
+            <Button
+              className="mt-auto h-15 w-full rounded-full"
+              loading={btnLoading}
+              variant={"default"}
+            >
+              Save
+            </Button>
+          </form>
+        </div>
+        {/* change name */}
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className={`fixed top-0 right-[-15px] h-screen w-[460px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-9 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${changeName ? "translate-x-0" : "translate-x-full"} `}
         >
           <div className="absolute top-5 left-0 flex w-full items-center justify-between px-5">
             <button

@@ -3,6 +3,7 @@
 import z from "zod";
 import Link from "next/link";
 import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
 import { auth } from "@/lib/firebase";
 import { useForm } from "react-hook-form";
 import { FcGoogle } from "react-icons/fc";
@@ -14,7 +15,6 @@ import CustomButton from "@/components/CustomButton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getUser } from "@/lib/firestore/user/read_server";
 import AuthContextProvider, { useAuth } from "@/context/AutnContext";
-
 import {
   GoogleAuthProvider,
   signInWithEmailAndPassword,
@@ -25,6 +25,7 @@ import {
   createFavoriteList,
   createUser,
   deleteFavoriteList,
+  mergeFavorites,
   updateListName,
 } from "@/lib/firestore/user/write";
 import {
@@ -33,6 +34,7 @@ import {
   Heart,
   List,
   LogOut,
+  TriangleAlert,
   UserRound,
   X,
 } from "lucide-react";
@@ -66,12 +68,14 @@ export interface TFavorites {
 }
 
 function PageChild() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [favorites, setFavorites] = useState<TFavorites[] | null>(null);
   const [listName, setListName] = useState<string>("");
   const [showInfo, setShowInfo] = useState<string>("");
   const [createList, setCreateList] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [btnLoading, setBtnLoading] = useState<boolean>(false);
+  const [notMergedList, setNotMergedList] = useState<TFavorites[] | null>(null);
   const {
     register,
     handleSubmit,
@@ -80,6 +84,69 @@ function PageChild() {
   } = useForm<TLogInSchema>({
     resolver: zodResolver(logInSchema),
   });
+
+  // set favorites to null if no user and no local storage favorites
+  useEffect(() => {
+    const local = localStorage.getItem("favoriteList");
+    const parsed: TFavorites[] = local ? JSON.parse(local) : [];
+
+    if (!user && parsed.length === 0) {
+      setFavorites(null);
+      return;
+    }
+
+    async function mergeFavoritesOnLogin() {
+      const firebaseUser = await getUser({ id });
+      const firebaseLists = firebaseUser?.favorites || [];
+      const localLists = JSON.parse(
+        localStorage.getItem("favoriteList") || "[]",
+      );
+      const MAX_LISTS = 10;
+      const availableSlots = MAX_LISTS - firebaseLists.length;
+      if (availableSlots <= 0) {
+        setFavorites(firebaseUser?.favorites);
+        setIsLoading(false);
+        toast.info("You have reached the maximum number of favorite lists.");
+        window.localStorage.removeItem("favoriteList");
+        return;
+      }
+      const listsToTake = localLists.slice(0, availableSlots);
+
+      await mergeFavorites({
+        uid: id as string,
+        localFavorites: [...listsToTake],
+      });
+      setFavorites([...firebaseLists, ...listsToTake]);
+      if (firebaseLists.length + localLists.length > 10) {
+        const notMerged = localLists.slice(10 - firebaseLists.length);
+        setNotMergedList(notMerged);
+      } else if (localLists.length > 0) {
+        toast.success(
+          "You are now logged in! Lists saved to favourites before login have been added to your account.",
+        );
+      }
+      window.localStorage.removeItem("favoriteList");
+    }
+
+    if (user && parsed.length > 0) {
+      mergeFavoritesOnLogin();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    setIsLoading(false);
+  }, [authLoading]);
+
+  useEffect(() => {
+    if (user) return;
+    setFavorites(() => {
+      const result = window.localStorage.getItem("favoriteList");
+      if (result) {
+        return JSON.parse(result);
+      }
+    });
+  }, []);
 
   async function onSubmit(data: TLogInSchema) {
     try {
@@ -104,14 +171,44 @@ function PageChild() {
     setIsLoading(false);
   }, [id]);
 
+  // const fetchUser = useCallback(async () => {
+  //   setIsLoading(true);
+  //   const userN = await getUser({ id });
+  //   const firebaseLists = userN?.favorites || [];
+  //   const localLists = JSON.parse(localStorage.getItem("favoriteList") || "[]");
+  //   const MAX_LISTS = 10;
+  //   const availableSlots = MAX_LISTS - firebaseLists.length;
+  //   if (availableSlots <= 0) {
+  //     setFavorites(userN?.favorites);
+  //     setIsLoading(false);
+  //     toast.info(
+  //       "You have reached the maximum number of favorite lists. Please remove some lists to add more.",
+  //     );
+
+  //     return;
+  //   }
+  //   const listsToTake = localLists.slice(0, availableSlots);
+  //   setFavorites([...firebaseLists, ...listsToTake]);
+  //   if (firebaseLists.length + localLists.length > 10) {
+  //     toast.info(
+  //       "Some favorite lists from your local storage could not be added because you have reached the maximum limit.",
+  //     );
+  //   } else {
+  //     toast.success(
+  //       "You are now logged in! Products saved to favourites before login have been added to your account.",
+  //     );
+  //   }
+  //   setIsLoading(false);
+  // }, [id]);
+
   useEffect(() => {
     if (!id) return;
     fetchUser();
-  }, [fetchUser, id]);
+  }, [fetchUser, id, authLoading]);
 
   // google login
   async function handleLogin() {
-    setIsLoading(true);
+    setBtnLoading(true);
     try {
       const credential = await signInWithPopup(auth, new GoogleAuthProvider());
 
@@ -120,10 +217,47 @@ function PageChild() {
         displayName: credential.user?.displayName as string,
         photoURL: credential.user?.photoURL as string,
       });
+      // const id = credential.user?.uid;
+      // if (id) {
+      //   const firebaseUser = await getUser({ id });
+      //   const firebaseLists = firebaseUser?.favorites || [];
+      //   const localLists = JSON.parse(
+      //     localStorage.getItem("favoriteList") || "[]",
+      //   );
+      //   const MAX_LISTS = 10;
+      //   const availableSlots = MAX_LISTS - firebaseLists.length;
+      //   if (availableSlots <= 0) {
+      //     setFavorites(firebaseUser?.favorites);
+      //     setIsLoading(false);
+      //     toast.info("You have reached the maximum number of favorite lists.");
+      //     window.localStorage.removeItem("favoriteList");
+      //     return;
+      //   }
+      //   const listsToTake = localLists.slice(0, availableSlots);
+
+      //   await mergeFavorites({
+      //     uid: id,
+      //     localFavorites: [...listsToTake],
+      //   });
+      //   setFavorites([...firebaseLists, ...listsToTake]);
+      //   if (firebaseLists.length + localLists.length > 10) {
+      //     // toast.info(
+      //     //   "Some favorite lists from your local storage could not be added because you have reached the maximum limit.",
+      //     // );
+
+      //     const notMerged = localLists.slice(10 - firebaseLists.length);
+      //     setNotMergedList(notMerged);
+      //   } else if (localLists.length > 0) {
+      //     toast.success(
+      //       "You are now logged in! Products saved to favourites before login have been added to your account.",
+      //     );
+      //   }
+      //   window.localStorage.removeItem("favoriteList");
+      // }
     } catch (error) {
       console.error("Login failed:", error);
     }
-    setIsLoading(false);
+    setBtnLoading(false);
   }
 
   useEffect(() => {
@@ -134,19 +268,74 @@ function PageChild() {
   async function handleCreateList(e: React.FormEvent, name?: string) {
     setIsLoading(true);
     e.preventDefault();
+
+    if (!user) {
+      if (typeof window === "undefined") return;
+
+      const newList = {
+        id: uuidv4(),
+        listName: name || listName,
+        list: [],
+      };
+
+      const favoriteLists = window.localStorage.getItem("favoriteList");
+      let favoriteListsArray: TFavorites[] = [];
+
+      if (favoriteLists) {
+        favoriteListsArray = JSON.parse(favoriteLists);
+      }
+
+      favoriteListsArray.push(newList);
+
+      window.localStorage.setItem(
+        "favoriteList",
+        JSON.stringify(favoriteListsArray),
+      );
+
+      toast.success(`"${listName || name}" has been created`);
+
+      setFavorites(() => {
+        const result = window.localStorage.getItem("favoriteList");
+        if (result) {
+          return JSON.parse(result);
+        }
+      });
+
+      setIsLoading(false);
+      setCreateList("");
+      setShowInfo("");
+
+      return;
+    }
+
     await createFavoriteList({
       uid: user?.uid as string,
       listName: name || listName,
     });
     await fetchUser();
+    toast.success(`"${listName || name}" has been created`);
     setIsLoading(false);
     setShowInfo("");
   }
 
   //handle remove list
-  async function handleRemoveList(listId: string) {
+  async function handleRemoveList(listId: string, listName: string) {
     await deleteFavoriteList({ uid: id as string, listId });
+    toast.success(` "${listName}" has been removed`);
     await fetchUser();
+  }
+
+  // handle remove from local storage
+  function handleRemoveFromLocalStorage(listId: string) {
+    if (typeof window === "undefined") return;
+    const favoriteLists = window.localStorage.getItem("favoriteList");
+    let favoriteListsArray: TFavorites[] = [];
+    if (favoriteLists) {
+      favoriteListsArray = JSON.parse(favoriteLists);
+    }
+    const newList = favoriteListsArray.filter((list) => list.id !== listId);
+    window.localStorage.setItem("favoriteList", JSON.stringify(newList));
+    setFavorites(newList);
   }
 
   // change list name
@@ -174,7 +363,7 @@ function PageChild() {
   }, [showInfo]);
 
   // loading
-  if (isLoading || favorites === null)
+  if (authLoading || isLoading)
     return (
       <div className="mx-12 my-20 space-y-2">
         <Skeleton
@@ -248,13 +437,33 @@ function PageChild() {
   return (
     <>
       <div className="mx-12 my-20 space-y-5">
-        {favorites.length ? (
+        {favorites?.length ? (
           <>
             <h1 className="mb-4 text-4xl">Your favorites</h1>
             <p className="text-muted-foreground text-sm">
               {favorites?.length} {favorites?.length === 1 ? "list" : "lists"}{" "}
               in total
             </p>
+            {!user && (
+              <div className="mb-10 flex gap-3 rounded-[4px] border-l-4 border-[#f26a2f] p-4 shadow-[3px_8px_10px_rgba(0,0,0,0.08)]">
+                <TriangleAlert color="#f26a2f" />
+                <div>
+                  <p className="font-semibold">
+                    These lists are only temporary
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span
+                      className="cursor-pointer underline"
+                      onClick={() => setShowInfo("login")}
+                    >
+                      Log in or join{" "}
+                    </span>
+                    to make sure your lists are here when you come back and to
+                    view them on other devices.
+                  </p>
+                </div>
+              </div>
+            )}
             {favorites &&
               favorites
                 .slice()
@@ -270,6 +479,10 @@ function PageChild() {
                       handleChangeListName={handleChangeListName}
                       fetchUser={fetchUser}
                       handleCreateList={handleCreateList}
+                      handleRemoveFromLocalStorage={
+                        handleRemoveFromLocalStorage
+                      }
+                      setFavorites={setFavorites}
                     />
                   );
                 })}
@@ -304,12 +517,25 @@ function PageChild() {
             </div>
           </>
         )}
-
+        {favorites?.length === 10 && (
+          <div className="flex gap-3 rounded-[4px] border-l-4 border-[#f26a2f] p-4 shadow-[3px_8px_10px_rgba(0,0,0,0.08)]">
+            <TriangleAlert color="#f26a2f" />
+            <div>
+              <p className="font-semibold">List limit reached</p>
+              <p className="text-sm text-gray-600">
+                Please remove one favourite list to be able to add more lists.
+                The number of products within each list is not affected by this
+                limit, so you can still add to or edit the existing ones.
+              </p>
+            </div>
+          </div>
+        )}
         {user ? (
           <Button
             variant={"default"}
-            className="mt-7 rounded-full border-black py-4"
+            className={`mt-7 rounded-full border-black py-4`}
             onClick={() => setShowInfo("create")}
+            disabled={favorites?.length === 10}
           >
             Create a new list
           </Button>
@@ -326,6 +552,7 @@ function PageChild() {
               variant={"default"}
               className="rounded-full border-black py-4"
               onClick={() => setShowInfo("create")}
+              disabled={favorites?.length === 10}
             >
               Create a new list
             </Button>
@@ -335,16 +562,8 @@ function PageChild() {
       {/* show login */}
       <FavoritesSidebar showInfo={showInfo} setShowInfo={setShowInfo}>
         <div
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            const overlay = e.currentTarget
-              .parentElement as ExtendedHTMLElement;
-            overlay._dragStartedOnOverlay = false;
-          }}
-          onMouseUp={(e) => e.stopPropagation()}
-          onMouseMove={(e) => e.stopPropagation()}
-          onMouseLeave={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-[-15px] h-screen w-[480px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-12 pt-24 pb-12 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "login" ? "translate-x-0" : "translate-x-full"}`}
+          onClick={(e) => e.stopPropagation()}
+          className={`fixed top-0 right-[-15px] h-screen w-[460px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-8 pt-24 pb-12 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "login" ? "translate-x-0" : "translate-x-full"}`}
         >
           <button
             onClick={() => {
@@ -352,7 +571,7 @@ function PageChild() {
             }}
             className={`absolute top-5 right-5 cursor-pointer`}
           >
-            <X />
+            <X size={20} />
           </button>
           {user ? (
             <div className="flex h-full flex-col justify-between">
@@ -376,74 +595,78 @@ function PageChild() {
               </button>
             </div>
           ) : (
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="flex flex-col gap-4"
-            >
-              <h1 className="text-1xl mb-4 font-bold">
-                Log in to your account
-              </h1>
-              <p className="text-muted-foreground mb-2 text-[15px]">
-                Get a more personalised experience where you don`t need to fill
-                in your information every time
-              </p>
-              <div>
-                <label
-                  htmlFor="email2"
-                  className="text-muted-foreground text-md font-normal"
-                >
-                  Email
-                </label>
-                <Input
-                  {...register("email")}
-                  id="email2"
-                  type="email"
-                  className="py-6"
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-600">{errors.email.message}</p>
-                )}
-              </div>
-              <div>
-                <label
-                  htmlFor="password2"
-                  className="text-muted-foreground text-md font-normal"
-                >
-                  Password
-                </label>
-                <Input
-                  {...register("password")}
-                  id="password2"
-                  type="password"
-                  className="py-6"
-                />
-                {errors.password && (
-                  <p className="text-sm text-red-600">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
-              <Link
-                href="/reset-password"
-                className="text-muted-foreground block underline"
+            <>
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="flex flex-col gap-4"
               >
-                Forgot your password?
-              </Link>
-              <Button
-                disabled={isSubmitting}
-                className="mt-10 w-full cursor-pointer rounded-full p-6 disabled:bg-gray-950"
-              >
-                Log in
-              </Button>
+                <h1 className="text-1xl mb-4 font-bold">
+                  Log in to your account
+                </h1>
+                <p className="text-muted-foreground mb-2 text-[15px]">
+                  Get a more personalised experience where you don`t need to
+                  fill in your information every time
+                </p>
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="text-muted-foreground text-md font-normal"
+                  >
+                    Email
+                  </label>
+                  <Input
+                    {...register("email")}
+                    id="email"
+                    type="email"
+                    className="py-6"
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-red-600">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="text-muted-foreground text-md font-normal"
+                  >
+                    Password
+                  </label>
+                  <Input
+                    {...register("password")}
+                    id="password"
+                    type="password"
+                    className="py-6"
+                  />
+                  {errors.password && (
+                    <p className="text-sm text-red-600">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
+                <Link
+                  href="/reset-password"
+                  className="text-muted-foreground block underline"
+                >
+                  Forgot your password?
+                </Link>
+                <Button
+                  disabled={isSubmitting}
+                  className="mt-10 w-full cursor-pointer rounded-full p-6 disabled:bg-gray-950"
+                >
+                  Log in
+                </Button>
+              </form>
               <Button
                 onClick={handleLogin}
-                disabled={isLoading}
-                className="w-full cursor-pointer rounded-full p-6 disabled:bg-gray-950"
+                disabled={btnLoading}
+                className="mt-4 w-full cursor-pointer rounded-full p-6 disabled:bg-gray-950"
               >
                 <FcGoogle size={25} />
                 <span>Sign in with Google</span>
               </Button>
-              <p className="text-muted-foreground after:content-[' '] before:content-[' '] relative my-6 text-center text-sm before:absolute before:top-1/2 before:left-0 before:h-[1px] before:w-[38%] before:bg-black/30 after:absolute after:top-1/2 after:right-0 after:h-[1px] after:w-[38%] after:bg-black/30">
+              <p className="text-muted-foreground after:content-[' '] before:content-[' '] relative my-10 text-center text-sm before:absolute before:top-1/2 before:left-0 before:h-[1px] before:w-[38%] before:bg-black/30 after:absolute after:top-1/2 after:right-0 after:h-[1px] after:w-[38%] after:bg-black/30">
                 New at IKEAN?
               </p>
               <Button
@@ -454,7 +677,7 @@ function PageChild() {
                   Create account
                 </Link>
               </Button>
-            </form>
+            </>
           )}
         </div>
         <div
@@ -468,7 +691,7 @@ function PageChild() {
           onMouseUp={(e) => e.stopPropagation()}
           onMouseMove={(e) => e.stopPropagation()}
           onMouseLeave={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-0 box-border h-screen w-[480px] overflow-y-auto rounded-l-lg border border-black/40 bg-white p-6 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "create" ? "translate-x-0" : "translate-x-full"}`}
+          className={`fixed top-0 right-0 box-border h-screen w-[460px] overflow-y-auto rounded-l-lg border border-black/40 bg-white p-6 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "create" ? "translate-x-0" : "translate-x-full"}`}
         >
           <div className="absolute top-7 left-2 flex w-full items-center justify-between pr-4">
             <h2 className="m-auto self-center">Create a new list </h2>
@@ -554,6 +777,46 @@ function PageChild() {
           </form>
         </div>
       </FavoritesSidebar>
+      {/*  notMergedList */}
+      <div
+        className={`fixed top-0 left-0 z-200 h-screen w-screen bg-black/30 transition duration-200 ${notMergedList ? "" : "pointer-events-none"}`}
+        style={{
+          opacity: notMergedList ? "1" : "0",
+        }}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className={`fixed top-1/2 right-1/2 w-[500px] translate-x-1/2 -translate-y-1/2 rounded-xl border border-black/30 bg-white p-10 transition duration-200 [scrollbar-gutter:stable] ${notMergedList ? "scale-100" : "scale-80"} flex flex-col justify-evenly`}
+        >
+          <div
+            className="flex justify-end"
+            onClick={() => setNotMergedList(null)}
+          >
+            <X size={22} className="cursor-pointer" />
+          </div>
+          <h1 className="my-6 text-2xl">Maximum favorites lists reached</h1>
+          <p className="text-[15px] text-[#737373]">
+            You&apos;ve reached the maximum number of favorite lists allowed Due
+            to the limit, some lists created before login couldn&apos;t be saved
+            to your account.
+          </p>
+          <p className="mt-6 font-semibold">
+            These exceeded lists have been removed:
+          </p>
+          <ul className="ms-8 mt-2 space-y-1 text-sm font-semibold text-[#737373] [&>li]:list-disc">
+            {notMergedList?.map((list) => (
+              <li key={list.id}>{list.listName}</li>
+            ))}
+          </ul>
+          <Button
+            variant={"default"}
+            className="mt-6 rounded-full py-6 font-bold"
+            onClick={() => setNotMergedList(null)}
+          >
+            Okay, got it!
+          </Button>
+        </div>
+      </div>
     </>
   );
 }

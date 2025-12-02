@@ -11,6 +11,7 @@ import {
   Ellipsis,
   PenLine,
   Trash2,
+  TriangleAlert,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,8 @@ import { ShopPlus } from "@/components/icons/Shop";
 import FavoritesSidebar, {
   ExtendedHTMLElement,
 } from "./components/FavoritesSidebar";
+import { Skeleton } from "@mui/material";
+import { toast } from "sonner";
 
 function FavoritesItems({
   id,
@@ -32,17 +35,21 @@ function FavoritesItems({
   handleRemoveList,
   handleChangeListName,
   handleCreateList,
+  handleRemoveFromLocalStorage,
+  setFavorites,
 }: {
   id: string;
   fav: TFavorites;
   fetchUser: () => Promise<void>;
   favorites: TFavorites[];
-  handleRemoveList: (listId: string) => Promise<void>;
+  handleRemoveList: (listId: string, listName: string) => Promise<void>;
   handleChangeListName: (listid: string, listName: string) => Promise<void>;
   handleCreateList: (
     e: React.FormEvent<HTMLFormElement>,
     name?: string,
   ) => Promise<void>;
+  handleRemoveFromLocalStorage: (listId: string) => void;
+  setFavorites: React.Dispatch<React.SetStateAction<TFavorites[] | null>>;
 }) {
   const [products, setProducts] = useState<TProduct[]>([]);
   const [showInfo, setShowInfo] = useState<string>("");
@@ -50,7 +57,7 @@ function FavoritesItems({
   const [changeName, setChangeName] = useState<boolean>(false);
   const [listName, setListName] = useState<string>(fav.listName);
   const [createList, setCreateList] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [btnLoading, setBtnLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -58,19 +65,26 @@ function FavoritesItems({
   }, [fav.listName]);
 
   useEffect(() => {
+    setLoading(true);
     async function fetchAll() {
       const data = await Promise.all(
         fav.list.map((product) => getProduct({ id: product.id })),
       );
       setProducts(data as TProduct[]);
+      setLoading(false);
     }
     fetchAll();
-  }, [fav]);
+  }, [fav.list]);
 
   // handle remove list
   async function handleRemove() {
     setLoading(true);
-    await handleRemoveList(fav.id);
+    if (!id) {
+      handleRemoveFromLocalStorage(fav.id);
+      setLoading(false);
+      return;
+    }
+    await handleRemoveList(fav.id, fav.listName);
     setLoading(false);
   }
 
@@ -83,6 +97,25 @@ function FavoritesItems({
   async function handleSubmitChangeName(e: React.FormEvent) {
     e.preventDefault();
     setBtnLoading(true);
+    if (!id) {
+      const localLists = window.localStorage.getItem("favoriteList");
+      let localListsArray: TFavorites[] = [];
+      if (localLists) {
+        localListsArray = JSON.parse(localLists);
+      }
+      const newList = localListsArray.map((list) => {
+        if (list.id === fav.id) {
+          return { ...list, listName };
+        }
+        return list;
+      });
+      window.localStorage.setItem("favoriteList", JSON.stringify(newList));
+      setFavorites(newList);
+      handleSetChangeName();
+      setShowInfo("");
+      setBtnLoading(false);
+      return;
+    }
     await handleChangeListName(fav.id, listName);
     handleSetChangeName();
     setShowInfo("");
@@ -91,7 +124,50 @@ function FavoritesItems({
 
   // handle move all items
   async function handleMoveAllItems(toListId: string) {
-    setBtnLoading(true);
+    // setBtnLoading(true);
+    if (!id) {
+      const localLists = JSON.parse(
+        window.localStorage.getItem("favoriteList") as string,
+      );
+      let localListsArray: TFavorites[] = [];
+      if (localLists) {
+        localListsArray = localLists;
+      }
+      const fromIndex = localListsArray.findIndex(
+        (f: TFavorites) => f.id === fav.id,
+      );
+      const toIndex = localListsArray.findIndex(
+        (f: TFavorites) => f.id === toListId,
+      );
+      if (fromIndex === -1 || toIndex === -1)
+        return console.error("List not found");
+
+      const fromList = localListsArray[fromIndex].list || [];
+      const toList = localListsArray[toIndex].list || [];
+
+      // Merge quantities
+      const mergedList = [...toList];
+      for (const item of fromList) {
+        const existing = mergedList.find((i) => i.id === item.id);
+        if (existing) existing.quantity += item.quantity;
+        else mergedList.push(item);
+      }
+
+      const updatedFavorites = [...localListsArray];
+      updatedFavorites[toIndex].list = mergedList;
+      updatedFavorites[fromIndex].list = [];
+
+      window.localStorage.setItem(
+        "favoriteList",
+        JSON.stringify(updatedFavorites),
+      );
+
+      setFavorites(updatedFavorites);
+      setShowInfo("");
+      // setBtnLoading(false);
+      toast.success("All items moved successfully");
+      return;
+    }
     await moveAllItems({
       uid: id as string,
       fromListId: fav.id,
@@ -99,7 +175,7 @@ function FavoritesItems({
     });
     await fetchUser();
     setShowInfo("");
-    setBtnLoading(false);
+    // setBtnLoading(false);
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -122,7 +198,7 @@ function FavoritesItems({
   }, [showInfo, fav]);
 
   return (
-    <div className="">
+    <div>
       <div className="flex items-center">
         <div>
           <h4 className="font-semibold">{fav.listName}</h4>
@@ -139,8 +215,15 @@ function FavoritesItems({
           <Ellipsis size={18} />
         </button>
       </div>
-      {products.length ? (
-        <Link href={`/favorites/${fav.id}-${id}`} className="">
+      {loading ? (
+        <Skeleton
+          width={258}
+          height={258}
+          variant="rectangular"
+          animation="wave"
+        />
+      ) : products.length ? (
+        <Link href={`/favorites/${fav.id}-${id ?? "guest"}`}>
           <div>
             <div className="flex w-fit cursor-pointer gap-1 overflow-x-auto bg-[#f5f5f5] p-1">
               {products.slice(0, 5).map((products) => (
@@ -160,8 +243,11 @@ function FavoritesItems({
           </div>
         </Link>
       ) : (
-        <Link href={`/favorites/${fav.id}-${id}`} className="cursor-pointer">
-          <span className="text-muted-foreground flex h-[250px] w-[250px] items-center bg-[#f5f5f5] px-10 text-center text-sm underline">
+        <Link
+          href={`/favorites/${fav.id}-${id ?? "guest"}`}
+          className="cursor-pointer"
+        >
+          <span className="text-muted-foreground flex h-[258px] w-[258px] items-center bg-[#f5f5f5] px-10 text-center text-sm underline">
             This list is waiting for your first product
           </span>
         </Link>
@@ -170,7 +256,7 @@ function FavoritesItems({
       <FavoritesSidebar showInfo={showInfo} setShowInfo={setShowInfo}>
         <div
           onClick={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-[-15px] h-screen w-[480px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-9 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "settings" ? "translate-x-0" : "translate-x-full"}`}
+          className={`fixed top-0 right-[-15px] h-screen w-[460px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-9 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "settings" ? "translate-x-0" : "translate-x-full"}`}
         >
           <div className="absolute top-5 left-0 flex w-full items-center justify-between px-5">
             <h3 className="m-auto self-center">{fav.listName}</h3>
@@ -221,9 +307,9 @@ function FavoritesItems({
         {/* move all items to another list */}
         <div
           onClick={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-[-15px] h-screen w-[480px] overflow-y-auto rounded-l-lg border border-black/30 bg-white px-9 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "moveAll" ? "translate-x-0" : "translate-x-full"}`}
+          className={`fixed top-0 right-[-15px] h-screen w-[460px] overflow-y-auto rounded-l-lg border border-black/30 bg-white transition duration-200 [scrollbar-gutter:stable] ${showInfo === "moveAll" ? "translate-x-0" : "translate-x-full"} flex flex-col ps-6 pt-6`}
         >
-          <div className="absolute top-5 left-0 flex w-full items-center justify-between px-5">
+          <div className="flex items-center justify-between pe-5">
             <button
               onClick={() => setShowInfo("settings")}
               className="cursor-pointer"
@@ -240,7 +326,7 @@ function FavoritesItems({
               <X size={20} opacity={0.6} strokeWidth={3} />
             </button>
           </div>
-          <div className="flex h-full flex-col">
+          <div className="mt-10 flex flex-1 flex-col overflow-y-auto pr-6">
             <h2>Which list should we move all items to?</h2>
             <div className="mt-10 flex flex-col gap-5">
               {favorites
@@ -256,9 +342,32 @@ function FavoritesItems({
                   />
                 ))}
             </div>
+          </div>
+          {favorites.length === 10 ? (
+            <div className="mt-6 -ml-6 rounded-[4px] border-l-4 border-[#f26a2f] shadow-[3px_8px_10px_rgba(0,0,0,0.08)]">
+              <div className="flex gap-3 p-4">
+                <TriangleAlert color="#f26a2f" className="shrink-0" />
+                <div>
+                  <p className="mb-1 font-semibold">List limit reached</p>
+                  <p className="text-sm text-gray-600">
+                    Please remove one favourite list to be able to add more
+                    lists. The number of products within each list is not
+                    affected by this limit, so you can still add to or edit the
+                    existing ones.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href={"/favorites"}
+                className="float-right me-4 cursor-pointer rounded-full px-4 py-1 text-sm font-semibold hover:bg-[#dfdfdf]"
+              >
+                Go to favorites
+              </Link>
+            </div>
+          ) : (
             <Button
               variant={"border"}
-              className="mt-auto w-full rounded-full py-6"
+              className="my-6 me-6 rounded-full py-6"
               onClick={() => {
                 setShowInfo("create");
                 setListName("");
@@ -276,7 +385,7 @@ function FavoritesItems({
               </svg>
               Create new list
             </Button>
-          </div>
+          )}
         </div>
         {/* create a new list */}
         <div
@@ -289,10 +398,10 @@ function FavoritesItems({
           onMouseUp={(e) => e.stopPropagation()}
           onMouseMove={(e) => e.stopPropagation()}
           onMouseLeave={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-0 box-border h-screen w-3/10 overflow-y-auto rounded-l-lg border border-black/40 bg-white p-6 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "create" ? "translate-x-0" : "translate-x-full"}`}
+          className={`fixed top-0 right-0 box-border h-screen w-[460px] overflow-y-auto rounded-l-lg border border-black/40 bg-white p-6 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${showInfo === "create" ? "translate-x-0" : "translate-x-full"}`}
         >
           <div className="absolute top-7 left-2 flex w-full items-center justify-between pr-4">
-            <h2 className="m-auto self-center">Create a new list </h2>
+            <h2 className="m-auto self-center">Create a new list</h2>
             <button
               onClick={() => {
                 setShowInfo("");
@@ -376,22 +485,20 @@ function FavoritesItems({
         </div>
       </FavoritesSidebar>
       {/* show change name */}
-      <div
-        className={`fixed top-0 left-0 z-200 h-screen w-screen bg-black/30 transition duration-200 ${changeName ? "" : "pointer-events-none"}`}
-        style={{
-          opacity: changeName ? "1" : "0",
-        }}
-        onClick={handleSetChangeName}
+      <FavoritesSidebar
+        changeName={changeName}
+        setChangeName={setChangeName}
+        // onClick={handleSetChangeName}
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          className={`fixed top-0 right-[-15px] h-screen w-[480px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-9 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${changeName ? "translate-x-0" : "translate-x-full"} `}
+          className={`fixed top-0 right-[-15px] h-screen w-[460px] overflow-y-auto rounded-l-lg border border-black/30 bg-white p-9 pt-24 pb-6 transition duration-200 [scrollbar-gutter:stable] ${changeName ? "translate-x-0" : "translate-x-full"} `}
         >
           <div className="absolute top-5 left-0 flex w-full items-center justify-between px-5">
             <button onClick={handleSetChangeName} className="cursor-pointer">
               <ArrowLeft size={24} />
             </button>
-            <h3 className="">Change name</h3>
+            <h3>Change name</h3>
             <button onClick={handleSetChangeName} className="cursor-pointer">
               <X size={20} opacity={0.6} strokeWidth={3} />
             </button>
@@ -473,7 +580,7 @@ function FavoritesItems({
             </Button>
           </form>
         </div>
-      </div>
+      </FavoritesSidebar>
       {/* show confirm remove */}
       <div
         className={`fixed top-0 left-0 z-200 h-screen w-screen bg-black/30 transition duration-200 ${confirm ? "" : "pointer-events-none"}`}
